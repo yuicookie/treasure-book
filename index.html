@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宝物図鑑</title>
+    <style>
+        /*
+        =================================
+        基本設定とリセット
+        =================================
+        */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none; /* 画像保存禁止 */
+            /* -webkit-user-select: none; */ /* コピー禁止 */
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('img/background.webp');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /*
+        =================================
+        メインコンテナ
+        =================================
+        */
+        .book-frame {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 4/3;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .inventory-container {
+            background: #E8F5E8;
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            height: 90vh;
+            max-height: 90vh;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /*
+        =================================
+        スマホ対応レスポンシブ
+        =================================
+        */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+
+            .book-frame {
+                width: 100%;
+                aspect-ratio: unset;
+                height: calc(100vh - 140px);
+            }
+
+            .inventory-container {
+                height: 100%;
+                max-height: 100%;
+                padding: 15px;
+                border-radius: 15px;
+            }
+
+            .header {
+                padding-bottom: 10px;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .tab-buttons {
+                gap: 5px;
+            }
+
+            .tab-btn {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .item-count {
+                font-size: 12px;
+            }
+
+            /* スマホ縦向き: 7列表示 */
+            .inventory-grid {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 8px;
+                padding: 10px;
+            }
+        }
+
+        /* スマホ横向き対応 */
+        @media (max-width: 1768px) and (orientation: landscape) {
+            body {
+                align-items: center;
+                padding: 10px 100px;
+            }
+
+            .book-frame {
+                height: calc(100vh - 20px);
+            }
+
+            .inventory-container {
+                padding: 10px;
+            }
+
+            .header {
+                padding-bottom: 8px;
+            }
+
+            .title {
+                font-size: 18px;
+            }
+
+            .tab-btn {
+                padding: 6px 10px;
+                font-size: 13px;
+            }
+
+            .item-count {
+                font-size: 11px;
+            }
+
+            /* スマホ横向き: 7列表示（少し小さく） */
+            .inventory-grid {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 6px;
+                padding: 8px;
+            }
+
+    		.popup-overlay {
+        		padding: 10px 60px;  /* 左右に大きな余白を追加 */
+    		}
+
+    		.popup {
+        		padding: 10px;
+        		max-width: none;           /* 幅制限を解除 */
+        		width: 100%;               /* 利用可能幅を100%使用 */
+        		max-height: calc(100vh - 20px);  /* 縦幅を画面いっぱいに */
+        		height: calc(100vh - 20px);      /* 固定の高い縦幅 */
+    		}
+        }
+
+        /*
+        =================================
+        ヘッダー部分
+        =================================
+        */
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center; /* ボタンを中央揃えにする */
+        }
+
+        /*
+        =================================
+        タブボタン
+        =================================
+        */
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center; /* ボタンを中央揃えにする */
+        }
+
+        .tab-btn {
+            padding: 10px 10px;
+            /* border: none; */
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 18px; /* 暫定対応 */
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #4fc3f7, #29b6f6);
+            color: white;
+        }
+
+        .tab-btn:not(.active) {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #e0e0e0;
+        }
+
+        /*
+        =================================
+        祝福宝物の回転エフェクト
+        =================================
+        */
+        .blessing-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 3;
+            animation: blessing-rotate 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes blessing-rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ポップアップ内の祝福エフェクト */
+        .popup-blessing-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 3;
+            animation: blessing-rotate 3s linear infinite;
+            pointer-events: none;
+        }
+
+        /* 祝福宝物のスタイル */
+        .popup.blessed {
+            background: linear-gradient(135deg, #e8f5e8, #4fc3f7);
+            border: 3px solid #29b6f6;
+        }
+
+        /*
+        =================================
+        エフェクトアニメーション
+        =================================
+        */
+        .effect-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 6;
+            pointer-events: none;
+            animation: effect-loop 3s infinite;
+        }
+
+        @keyframes effect-loop {
+            0% {
+                background-image: url('img/treasure_frame_effect01.webp');
+            }
+
+            3.33% {
+                background-image: url('img/treasure_frame_effect02.webp');
+            }
+
+            6.66% {
+                background-image: url('img/treasure_frame_effect03.webp');
+            }
+
+            9.99% {
+                background-image: url('img/treasure_frame_effect04.webp');
+            }
+
+            13.32% {
+                background-image: url('img/treasure_frame_effect06.webp');
+            }
+
+            16.65% {
+                background-image: none;
+            }
+
+            100% {
+                background-image: none;
+            }
+        }
+
+        /* ポップアップ内のエフェクトアニメーション */
+        .popup-effect-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 6;
+            pointer-events: none;
+            animation: effect-loop 3s infinite;
+        }
+
+        /*
+        =================================
+        インベントリグリッド
+        =================================
+        */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 8px;
+            background: #FFF8DC;
+            border-radius: 15px;
+            position: relative;
+            margin-top: 10px;
+            min-height: 0;
+        }
+
+        .inventory-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .inventory-grid::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 4px;
+        }
+
+        .inventory-grid::-webkit-scrollbar-thumb {
+            background: #29b6f6;
+            border-radius: 4px;
+        }
+
+        /*
+        =================================
+        アイテムスロット
+        =================================
+        */
+        .item-slot {
+            aspect-ratio: 1;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 15px;
+        }
+
+        .item-slot:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .item-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .item-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 2;
+        }
+
+        /*
+        =================================
+        パッシブタグエフェクト
+        =================================
+        */
+        .passive-tag-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* ポップアップ内のパッシブタグエフェクト */
+        .popup-passive-tag-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /*
+        =================================
+        ポップアップ - オーバーレイ
+        =================================
+        */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /*
+        =================================
+        ポップアップ - メインコンテンツ
+        =================================
+        */
+        .popup {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8);
+            position: relative;
+        }
+
+        .popup-overlay.show .popup {
+            transform: scale(1);
+        }
+
+        .popup-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        /*
+        =================================
+        ポップアップ - アイコン
+        =================================
+        */
+        .popup-icon {
+            width: 60px;
+            height: 60px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .popup-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+
+        .popup-icon .popup-item-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 2;
+        }
+
+        /*
+        =================================
+        ポップアップ - コンテンツセクション
+        =================================
+        */
+        .popup-title {
+            margin-right: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1.2;
+            color: #333;
+            white-space: pre-line;
+            word-wrap: break-word;
+        }
+
+        .popup-section {
+            margin-bottom: 15px;
+            background: #f8f8f8;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .popup-section-title {
+            background: #e8e8e8;
+            margin: -15px -15px 10px -15px;
+            padding: 10px 15px;
+            border-radius: 10px 10px 0 0;
+            border-bottom: 1px solid #d0d0d0;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .popup-description {
+            color: #555;
+            line-height: 1.6;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        /*
+        =================================
+        進化プレビュー
+        =================================
+        */
+        .evolution-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .evolution-preview:hover {
+            background: #e3f2fd;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(41, 182, 246, 0.3);
+        }
+
+        .evolution-icon {
+            width: 60px;
+            height: 60px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .evolution-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+
+        .evolution-icon .evolution-item-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 2;
+        }
+
+        /*
+        =================================
+        進化後アイテムのスタイル
+        =================================
+        */
+        .popup.evolved {
+            background: linear-gradient(135deg, #fff3e0, #ffcc02);
+            border: 3px solid #ff9800;
+        }
+
+        /*
+        =================================
+        一般宝物のスタイル
+        =================================
+        */
+        .popup:not(.evolved) {
+            border: 3px solid #ff9800;
+        }
+
+        /*
+        =================================
+        閉じるボタン
+        =================================
+        */
+        .close-btn {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            background: url('img/btn_x.webp') no-repeat center center;  /* 画像を背景に設定 */
+            background-size: contain;  /* 画像をボタンサイズに合わせる */
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            background-image: url('img/btn_x.webp');  /* ホバー時も同じ画像 */
+            background-color: rgba(0, 0, 0, 0.3);   /* 薄暗いオーバーレイ */
+            background-blend-mode: darken;           /* 画像を暗くするブレンドモード */
+        }
+
+        /*
+        =================================
+        ポップアップ - レスポンシブ対応
+        =================================
+        */
+        @media (max-width: 768px) {
+            .popup {
+                padding: 20px;
+                margin: 10px;
+                /* max-width: calc(100vw - 20px); */
+                max-height: calc(100vh - 120px);
+            }
+
+            .popup-header {
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            .popup-icon {
+                width: 50px;
+                height: 50px;
+            }
+
+            .popup-title {
+                font-size: 18px;
+            }
+
+            .evolution-icon {
+                width: 50px;
+                height: 50px;
+            }
+
+            .close-btn {
+                width: 25px;
+                height: 25px;
+                background: url('img/btn_x.webp') no-repeat center center;
+                background-size: contain;
+                font-size: 0;
+                color: transparent;
+            }
+
+            .close-btn:hover {
+                background-image: url('img/btn_x.webp');
+                background-color: rgba(0, 0, 0, 0.3);
+                background-blend-mode: darken;
+            }
+        }
+        /*
+        =================================
+        バージョン表示
+        =================================
+        */
+        .update-version {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 12px;
+            color: #666;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            .update-version {
+                font-size: 10px;
+                bottom: 5px;
+                left: 5px;
+                padding: 2px 6px;
+            }
+        }
+        /*
+        =================================
+        言語切り替えボタン
+        =================================
+        */
+        .language-selector {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .language-selector label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .language-selector input[type="radio"] {
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .language-selector {
+                gap: 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="update-version">Ver:12.7<br>更新日：2025年7月20日</div>
+    <div class="book-frame">
+        <div class="inventory-container">
+<div class="header">
+    <div class="title">
+        📖 宝物図鑑
+        <div class="language-selector">
+            <label><input type="radio" name="language" value="ja" checked onchange="switchLanguage(this.value)"> 日本語</label>
+            <label><input type="radio" name="language" value="ko" onchange="switchLanguage(this.value)"> 한국어</label>
+        </div>
+    </div>
+    <div class="tab-buttons">
+        <button class="tab-btn active" id="generalTab" onclick="switchTab('general')">一般宝物</button>
+        <button class="tab-btn" id="evolutionTab" onclick="switchTab('evolution')">進化宝物</button>
+        <button class="tab-btn" id="blessedTab" onclick="switchTab('blessed')">祝福宝物</button>
+    </div>
+</div>
+
+            <div class="inventory-grid" id="inventoryGrid">
+                <!-- アイテムがJavaScriptで動的に生成される -->
+            </div>
+        </div>
+    </div>
+
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup" id="popup">
+            <button class="close-btn" onclick="closePopup()"></button>
+            <div class="popup-header">
+                <div class="popup-icon" id="popupIcon"></div>
+                <div class="popup-title" id="popupTitle"></div>
+            </div>
+            <div class="popup-section">
+                <div class="popup-section-title">装着効果</div>
+                <div class="popup-description" id="popupEffect"></div>
+            </div>
+            <div class="popup-section">
+                <div class="popup-section-title">入手方法</div>
+                <div class="popup-description" id="popupMethod"></div>
+            </div>
+            <div class="popup-section" id="evolutionSection" style="display: none;">
+                <div class="popup-section-title">進化可能な宝物</div>
+                <div class="popup-description" id="popupEvolution"></div>
+            </div>
+        </div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        /*
+        =================================
+        ダミーデータ生成処理
+        =================================
+        */
+        // ダミーデータで322個まで拡張
+        function generateExtendedData() {
+            const rarities = ['C', 'C', 'C', 'B', 'B', 'A', 'S'];
+
+            // 一般宝物を322個まで拡張
+            for (let i = 11; i <= 322; i++) {
+                const randomRarity = rarities[Math.floor(Math.random() * rarities.length)];
+                const canEvolve = Math.random() > 0.7;
+
+                ITEM_DATA.general.push({
+                    id: `item_${i}`,
+                    name: `アイテム${i}`,
+                    rarity: randomRarity,
+                    canEvolve: canEvolve,
+                    effect: `様々な効果を提供します（アイテム${i}）`,
+                    method: `ゲーム進行を通じて獲得（アイテム${i}）`,
+                    description: `アイテム${i}の詳細な説明です。`,
+                    isDummy: true, // ダミーフラグを追加
+                    booknone: Math.random() > 0.7 // booknoneフラグを追加
+                });
+
+                // 進化可能なアイテムは進化版も作成
+                if (canEvolve) {
+                    const evolvedRarity = randomRarity === 'C' ? 'B' :
+                        randomRarity === 'B' ? 'A' : 'S';
+
+                    ITEM_DATA.evolution.push({
+                        id: `item_${i}_evolved`,
+                        name: `進化した${ITEM_DATA.general[ITEM_DATA.general.length - 1].name}`,
+                        rarity: evolvedRarity,
+                        canEvolve: true,
+                        effect: `強化された効果を提供します（進化アイテム${i}）`,
+                        method: `${ITEM_DATA.general[ITEM_DATA.general.length - 1].name}を進化させて獲得`,
+                        baseId: `item_${i}`,
+                        description: `進化したアイテム${i}の詳細な説明です。`,
+                        isDummy: true, // ダミーフラグを追加
+                        booknone: Math.random() > 0.7 // booknoneフラグを追加
+                    });
+
+                    // 祝福宝物も作成
+                    const blessedRarity = evolvedRarity === 'B' ? 'A' :
+                        evolvedRarity === 'A' ? 'S' : 'S';
+
+                    ITEM_DATA.blessed.push({
+                        id: `item_${i}_blessed`,
+                        name: `祝福された進化した${ITEM_DATA.general[ITEM_DATA.general.length - 1].name}`,
+                        rarity: blessedRarity,
+                        canEvolve: false,
+                        effect: `究極の効果を提供します（祝福アイテム${i}）`,
+                        method: `進化した${ITEM_DATA.general[ITEM_DATA.general.length - 1].name}を祝福して獲得`,
+                        baseId: `item_${i}_evolved`,
+                        description: `祝福されたアイテム${i}の詳細な説明です。`,
+                        isDummy: true, // ダミーフラグを追加
+                        booknone: Math.random() > 0.7 // booknoneフラグを追加
+                    });
+                }
+            }
+        }
+
+        // データ拡張を実行
+        // generateExtendedData();
+
+        /*
+        =================================
+        ユーティリティ関数
+        =================================
+        */
+        // アイテム画像パス生成関数
+        function getItemImagePath(itemId, isEvolved = false) {
+            // 祝福宝物の場合、進化宝物と同じ画像を使用
+            if (itemId.includes('_blessed')) {
+                const baseId = itemId.replace('_blessed', '');
+                return `img/${baseId}.webp`;
+            }
+            return `img/${itemId}.webp`;
+        }
+
+        // フレーム画像パス生成関数
+        function getFrameImagePath(rarity, tabType = 'general') {
+            const rarityLower = rarity.toLowerCase();
+            if (tabType === 'evolution') {
+                return `img/treasure_mix_frame_${rarityLower}.webp`;
+            } else if (tabType === 'blessed') {
+                return `img/treasure_mix_frame_${rarityLower}.webp`;
+            }
+            return `img/treasure_frame_${rarityLower}.webp`;
+        }
+
+        // 祝福エフェクト画像パス生成関数
+        function getBlessingEffectPath(rarity) {
+            if (rarity === 'S') {
+                return 'img/treasure_frame_effect05.webp';
+            }
+            return 'img/treasure_frame_effect07.webp';
+        }
+        // レアリティによる色取得
+        function getRarityColor(rarity) {
+            switch (rarity) {
+                case 'C': return '#808080';  // 灰色
+                case 'B': return '#4fc3f7';  // 青色
+                case 'A': return '#FF9800';  // オレンジ色
+                case 'S': return '#9C27B0';  // 紫色
+                default: return '#808080';
+            }
+        }
+
+        /*
+        =================================
+        UI管理クラス
+        =================================
+        */
+        // UI管理クラス
+        class InventoryUI {
+            constructor() {
+                this.currentTab = 'general';
+                this.currentPopupItem = null;
+                this.popupHistory = []; // ポップアップの履歴を管理
+                this.popupSource = null; // ポップアップの発生源を記録
+                this.scrollPositions = { // 各タブのスクロール位置を保持
+                    general: 0,
+                    evolution: 0,
+                    blessed: 0
+                };
+            }
+
+            /*
+            =================================
+            インベントリグリッド関連メソッド
+            =================================
+            */
+            // レアリティによるソート順序を定義
+            getRaritySortOrder(rarity) {
+                const order = { 'S': 1, 'A': 2, 'B': 3, 'C': 4 };
+                return order[rarity] || 999;
+            }
+
+            // インベントリグリッドを作成
+            createInventoryGrid(items) {
+                const grid = document.getElementById('inventoryGrid');
+                grid.innerHTML = '';
+
+                // アイテムデータを(レアリティ→ダミーフラグ→パッシブタグ→booknone→アイテムデータ配列順)でソート
+                const sortedItems = [...items].sort((a, b) => {
+                    // 1. レアリティでソート（S→A→B→C順）
+                    const orderA = this.getRaritySortOrder(a.rarity);
+                    const orderB = this.getRaritySortOrder(b.rarity);
+
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+
+                    // 2. 同じレアリティ内ではダミーフラグでソート（実データが先）
+                    const isDummyA = a.isDummy || false;
+                    const isDummyB = b.isDummy || false;
+
+                    if (isDummyA !== isDummyB) {
+                        return isDummyA - isDummyB; // false(0) が先、true(1) が後
+                    }
+
+                    // 3. 同じレアリティ・ダミーフラグ内ではbooknoneでソート（booknoneなしが先、booknoneありが後）
+                    const hasBooknoneA = a.booknone || false;
+                    const hasBooknoneB = b.booknone || false;
+
+                    if (hasBooknoneA !== hasBooknoneB) {
+                        return hasBooknoneA - hasBooknoneB; // false(0) が先、true(1) が後
+                    }
+
+                    // 4. 同じレアリティ・ダミーフラグ・booknone内ではパッシブタグでソート（パッシブタグなしが先、パッシブタグありが後）
+                    const hasPassiveA = a.hasPassiveTag || false;
+                    const hasPassiveB = b.hasPassiveTag || false;
+
+                    if (hasPassiveA !== hasPassiveB) {
+                        return hasPassiveA - hasPassiveB; // false(0) が先、true(1) が後
+                    }
+
+                    // 5. 最後にアイテムデータ配列順でソート（元の配列順序を維持）
+                    const indexA = items.indexOf(a);
+                    const indexB = items.indexOf(b);
+
+                    return indexA - indexB;
+                });
+                sortedItems.forEach(item => {
+                    const slot = this.createItemSlot(item);
+                    grid.appendChild(slot);
+                });
+
+                this.updateItemCount(sortedItems.length);
+            }
+
+            // アイテムスロットを作成
+            createItemSlot(item) {
+                const slot = document.createElement('div');
+                slot.className = `item-slot ${item.rarity}`;
+                slot.onclick = () => this.showItemPopup(item);
+
+                // フレーム画像
+                const frameImage = document.createElement('div');
+                frameImage.className = 'item-frame';
+                frameImage.style.backgroundImage = `url('${getFrameImagePath(item.rarity, this.currentTab)}')`;
+
+                // アイテム画像
+                const itemImage = document.createElement('div');
+                itemImage.className = 'item-image';
+                const isEvolved = this.currentTab === 'evolution' || this.currentTab === 'blessed';
+                itemImage.style.backgroundImage = `url('${getItemImagePath(item.id, isEvolved)}')`;
+
+                // 祝福宝物の場合、z-indexを設定して回転エフェクトより上に表示
+                if (this.currentTab === 'blessed') {
+                    itemImage.style.zIndex = '4';
+                }
+
+                slot.appendChild(frameImage);
+                slot.appendChild(itemImage);
+
+                // 祝福宝物の場合、回転エフェクトを追加
+                if (this.currentTab === 'blessed') {
+                    const blessingEffect = document.createElement('div');
+                    blessingEffect.className = 'blessing-effect';
+                    blessingEffect.style.backgroundImage = `url('${getBlessingEffectPath(item.rarity)}')`;
+                    slot.appendChild(blessingEffect);
+                }
+
+                // パッシブタグエフェクトを追加（一番上に表示）
+                if (item.hasPassiveTag) {
+                    const passiveTagEffect = document.createElement('div');
+                    passiveTagEffect.className = 'passive-tag-effect';
+                    passiveTagEffect.style.backgroundImage = `url('img/treasure_tag_passive.webp')`;
+                    slot.appendChild(passiveTagEffect);
+                }
+
+                // Sランクの祝福宝物の場合、エフェクトアニメーションを追加（最上位に表示）
+                if (this.currentTab === 'blessed' && item.rarity === 'S') {
+                    const effectAnimation = document.createElement('div');
+                    effectAnimation.className = 'effect-animation';
+                    slot.appendChild(effectAnimation);
+                }
+
+                return slot;
+            }
+
+            /*
+            =================================
+            ポップアップ関連メソッド
+            =================================
+            */
+            // アイテム詳細ポップアップを表示
+            showItemPopup(item, source = 'grid') {
+                // ポップアップを開く前に現在のスクロール位置を保存
+                const grid = document.getElementById('inventoryGrid');
+                if (grid && source === 'grid') {
+                    this.scrollPositions[this.currentTab] = grid.scrollTop;
+                }
+
+                this.currentPopupItem = item;
+                this.popupSource = source;
+
+                // 履歴を管理（グリッドから開いた場合のみ履歴に追加）
+                if (source === 'grid') {
+                    this.popupHistory = [item];
+                } else if (source === 'evolution' || source === 'blessed') {
+                    this.popupHistory.push(item);
+                }
+
+                const overlay = document.getElementById('popupOverlay');
+                const popup = document.getElementById('popup');
+                const icon = document.getElementById('popupIcon');
+                const title = document.getElementById('popupTitle');
+                const effect = document.getElementById('popupEffect');
+                const method = document.getElementById('popupMethod');
+                const evolutionSection = document.getElementById('evolutionSection');
+                const evolution = document.getElementById('popupEvolution');
+
+                // ポップアップのスクロールを一番上に戻す
+                popup.scrollTop = 0;
+
+                // ポップアップのスタイルをリセット
+                popup.classList.remove('evolved', 'blessed');
+                icon.classList.remove('evolved');
+
+                // 進化後アイテムの場合、黄色背景を適用
+                const isEvolved = this.currentTab === 'evolution';
+                const isBlessed = this.currentTab === 'blessed';
+                if (isEvolved) {
+                    popup.classList.add('evolved');
+                    icon.classList.add('evolved');
+                } else if (isBlessed) {
+                    popup.classList.add('blessed');
+                    icon.classList.add('evolved');
+                }
+
+                // ポップアップアイコン設定（フレーム付き）
+                const frameImageUrl = getFrameImagePath(item.rarity, this.currentTab);
+                const itemImageUrl = getItemImagePath(item.id, isEvolved || isBlessed);
+
+                icon.style.backgroundImage = `url('${frameImageUrl}')`;
+
+                let iconHTML = `<div class="popup-item-image" style="background-image: url('${itemImageUrl}'); z-index: 4;"></div>`;
+
+                // 祝福宝物の場合、回転エフェクトを追加
+                if (isBlessed) {
+                    const blessingEffectUrl = getBlessingEffectPath(item.rarity);
+                    iconHTML += `<div class="popup-blessing-effect" style="background-image: url('${blessingEffectUrl}'); z-index: 3;"></div>`;
+                }
+
+                // パッシブタグエフェクトを追加（一番上に表示）
+                if (item.hasPassiveTag) {
+                    iconHTML += `<div class="popup-passive-tag-effect" style="background-image: url('img/treasure_tag_passive.webp'); z-index: 5;"></div>`;
+                }
+
+                // Sランクの祝福宝物の場合、エフェクトアニメーションを追加（最上位に表示）
+                if (isBlessed && item.rarity === 'S') {
+                    iconHTML += `<div class="popup-effect-animation" style="z-index: 6;"></div>`;
+                }
+
+                icon.innerHTML = iconHTML;
+
+                // アイテム名に色を適用
+                title.textContent = item.name;
+                title.style.color = getRarityColor(item.rarity);
+
+                effect.textContent = item.effect.replace(/\\n/g, '\n'); //'/n'で改行する
+                effect.style.whiteSpace = 'pre-line';
+
+                method.textContent = item.method;
+
+                // 進化可能なアイテムの場合
+                if (item.canEvolve) {
+                    evolutionSection.style.display = 'block';
+
+                    let nextEvolutionItem = null;
+                    if (this.currentTab === 'general') {
+                        nextEvolutionItem = this.findEvolvedItem(item.id);
+                        evolutionSection.querySelector('.popup-section-title').textContent = '進化可能な宝物';
+                    } else if (this.currentTab === 'evolution') {
+                        nextEvolutionItem = this.findBlessedItem(item.id);
+                        evolutionSection.querySelector('.popup-section-title').textContent = '祝福された宝物';
+                    }
+
+                    if (nextEvolutionItem) {
+                        evolution.innerHTML = this.createEvolutionPreview(nextEvolutionItem);
+                    }
+                } else {
+                    evolutionSection.style.display = 'none';
+                }
+
+                // アイテム説明セクションを追加
+                this.addDescriptionSection(item);
+
+                overlay.classList.add('show');
+            }
+            // アイテム説明セクションを追加
+            addDescriptionSection(item) {
+                // 既存の説明セクションを削除
+                const existingDescSection = document.getElementById('descriptionSection');
+                if (existingDescSection) {
+                    existingDescSection.remove();
+                }
+
+                const popup = document.getElementById('popup');
+                const evolutionSection = document.getElementById('evolutionSection');
+
+                // 説明セクションを作成
+                const descSection = document.createElement('div');
+                descSection.id = 'descriptionSection';
+                descSection.className = 'popup-section';
+                const description = item.description || 'アイテムの説明がありません。';
+                const formattedDescription = description.replace(/\\n/g, '\n');
+                descSection.innerHTML = `
+                <div class="popup-section-title">説明</div>
+                <div class="popup-description" style="white-space: pre-line;">${formattedDescription}</div>
+                `;
+
+                // 進化可能アイテムの場合は進化セクションの後に、そうでなければ入手方法の後に追加
+                if (item.canEvolve && (this.currentTab === 'general' || this.currentTab === 'evolution')) {
+                    evolutionSection.insertAdjacentElement('afterend', descSection);
+                } else {
+                    const methodSection = popup.querySelector('.popup-section:nth-child(4)'); // 入手方法のセクション
+                    if (methodSection) {
+                        methodSection.insertAdjacentElement('afterend', descSection);
+                    }
+                }
+            }
+            // 進化プレビューHTML作成
+            createEvolutionPreview(evolvedItem) {
+                // 祝福宝物かどうかを判定
+                const isBlessed = ITEM_DATA.blessed.some(item => item.id === evolvedItem.id);
+                const tabType = isBlessed ? 'blessed' : 'evolution';
+
+                let iconHTML = `<div class="evolution-item-image" style="background-image: url('${getItemImagePath(evolvedItem.id, true)}'); z-index: 4;"></div>`;
+
+                // 祝福宝物の場合のみ、回転エフェクトを追加
+                if (isBlessed) {
+                    const blessingEffectUrl = getBlessingEffectPath(evolvedItem.rarity);
+                    iconHTML += `<div class="blessing-effect" style="background-image: url('${blessingEffectUrl}'); z-index: 3;"></div>`;
+                }
+
+                // パッシブタグエフェクトを追加（一番上に表示）
+                if (evolvedItem.hasPassiveTag) {
+                    iconHTML += `<div class="passive-tag-effect" style="background-image: url('img/treasure_tag_passive.webp'); z-index: 5;"></div>`;
+                }
+
+                // Sランクの祝福宝物の場合、エフェクトアニメーションを追加（最上位に表示）
+                if (isBlessed && evolvedItem.rarity === 'S') {
+                    iconHTML += `<div class="effect-animation" style="z-index: 6;"></div>`;
+                }
+
+                return `
+        <div class="evolution-preview" onclick="inventoryUI.showEvolvedItemPopup('${evolvedItem.id}')">
+            <div class="evolution-icon" style="background-image: url('${getFrameImagePath(evolvedItem.rarity, tabType)}');">
+                ${iconHTML}
+            </div>
+            <div>
+                <div style="font-weight: bold; color: ${getRarityColor(evolvedItem.rarity)};">${evolvedItem.name}</div>
+                <div style="font-size: 14px; color: #666; margin-top: 5px;">${evolvedItem.effect}</div>
+            </div>
+        </div>
+    `;
+            }
+            // 進化したアイテムを検索
+            findEvolvedItem(baseId) {
+                return ITEM_DATA.evolution.find(item => item.baseId === baseId);
+            }
+
+            // 祝福されたアイテムを検索
+            findBlessedItem(baseId) {
+                return ITEM_DATA.blessed.find(item => item.baseId === baseId);
+            }
+            // 進化したアイテムのポップアップ表示
+            showEvolvedItemPopup(itemId) {
+                // 進化アイテムを検索
+                let evolvedItem = ITEM_DATA.evolution.find(item => item.id === itemId);
+                if (evolvedItem) {
+                    // 一般宝物タブから進化宝物を開く場合、タブを一時的に切り替え
+                    const originalTab = this.currentTab;
+                    this.currentTab = 'evolution';
+                    this.showItemPopup(evolvedItem, 'evolution');
+                    // タブを元に戻す必要はない（ポップアップが開いている間はタブ状態を維持）
+                    return;
+                }
+
+                // 祝福アイテムを検索
+                let blessedItem = ITEM_DATA.blessed.find(item => item.id === itemId);
+                if (blessedItem) {
+                    // 進化宝物タブから祝福宝物を開く場合、タブを一時的に切り替え
+                    const originalTab = this.currentTab;
+                    this.currentTab = 'blessed';
+                    this.showItemPopup(blessedItem, 'blessed');
+                    return;
+                }
+            }
+            // ポップアップを閉じる
+            closePopup() {
+                const overlay = document.getElementById('popupOverlay');
+                const popup = document.getElementById('popup');
+                const icon = document.getElementById('popupIcon');
+
+                // 履歴が2つ以上ある場合（通常宝物→進化宝物の順で開いた場合）
+                if (this.popupHistory.length >= 2) {
+                    // 最後のアイテムを削除
+                    this.popupHistory.pop();
+
+                    // 元のアイテム（通常宝物）を表示
+                    const previousItem = this.popupHistory[this.popupHistory.length - 1];
+
+                    // 元のタブに戻す
+                    if (this.popupHistory.length === 1) {
+                        // 最初のアイテムの場合、そのアイテムが属するタブに戻す
+                        if (ITEM_DATA.general.some(item => item.id === previousItem.id)) {
+                            this.currentTab = 'general';
+                        } else if (ITEM_DATA.evolution.some(item => item.id === previousItem.id)) {
+                            this.currentTab = 'evolution';
+                        } else if (ITEM_DATA.blessed.some(item => item.id === previousItem.id)) {
+                            this.currentTab = 'blessed';
+                        }
+                    } else {
+                        // 2つ以上ある場合は、前のアイテムが所属するタブに切り替える
+                        if (ITEM_DATA.general.some(item => item.id === previousItem.id)) {
+                            this.currentTab = 'general';
+                        } else if (ITEM_DATA.evolution.some(item => item.id === previousItem.id)) {
+                            this.currentTab = 'evolution';
+                        } else if (ITEM_DATA.blessed.some(item => item.id === previousItem.id)) {
+                            this.currentTab = 'blessed';
+                        }
+                    }
+
+                    this.showItemPopup(previousItem, 'history');
+                    return;
+                }
+
+                // 通常の閉じる処理
+                overlay.classList.remove('show');
+                popup.classList.remove('evolved', 'blessed');
+                icon.classList.remove('evolved');
+
+                // ポップアップの全てのコンテンツを完全にクリア
+                icon.innerHTML = '';
+                icon.style.backgroundImage = '';
+                document.getElementById('popupTitle').textContent = '';
+                document.getElementById('popupTitle').style.color = '';
+                document.getElementById('popupEffect').textContent = '';
+                document.getElementById('popupEffect').style.whiteSpace = '';
+                document.getElementById('popupMethod').textContent = '';
+                document.getElementById('popupEvolution').innerHTML = '';
+                document.getElementById('evolutionSection').style.display = 'none';
+
+                // 動的に追加された説明セクションを削除
+                const existingDescSection = document.getElementById('descriptionSection');
+                if (existingDescSection) {
+                    existingDescSection.remove();
+                }
+
+                // 状態を完全にリセット
+                this.currentPopupItem = null;
+                this.popupHistory = [];
+                this.popupSource = null;
+            }
+
+            // タブ切り替え
+            switchTab(tabName) {
+                const grid = document.getElementById('inventoryGrid');
+
+                // 現在のタブのスクロール位置を保存
+                if (this.currentTab && grid) {
+                    this.scrollPositions[this.currentTab] = grid.scrollTop;
+                }
+
+                this.currentTab = tabName;
+
+                // タブボタンの状態更新
+                document.getElementById('generalTab').classList.toggle('active', tabName === 'general');
+                document.getElementById('evolutionTab').classList.toggle('active', tabName === 'evolution');
+                document.getElementById('blessedTab').classList.toggle('active', tabName === 'blessed');
+
+                // アイテムリスト更新
+                const items = ITEM_DATA[tabName];
+                this.createInventoryGrid(items);
+
+                // 保存されたスクロール位置を復元
+                if (grid && this.scrollPositions[tabName] !== undefined) {
+                    // 少し遅延をかけてスクロール位置を復元（DOM更新後に実行）
+                    setTimeout(() => {
+                        grid.scrollTop = this.scrollPositions[tabName];
+                    }, 10);
+                }
+            }
+            // アイテム数更新
+            updateItemCount(count) {
+                const currentCountElement = document.getElementById('currentCount');
+                if (currentCountElement) {
+                    currentCountElement.textContent = count;
+                }
+            }
+
+            // 初期化
+            init() {
+                this.switchTab('general');
+                this.setupEventListeners();
+                this.addCustomStyles();
+            }
+
+            // カスタムスタイルを追加
+            addCustomStyles() {
+                const style = document.createElement('style');
+                document.head.appendChild(style);
+            }
+
+            // イベントリスナー設定
+            setupEventListeners() {
+                // オーバーレイクリックで閉じる
+                document.getElementById('popupOverlay').onclick = (e) => {
+                    if (e.target === document.getElementById('popupOverlay')) {
+                        this.closePopup();
+                    }
+                };
+
+                // ESCキーで閉じる
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && document.getElementById('popupOverlay').classList.contains('show')) {
+                        this.closePopup();
+                    }
+                });
+            }
+        }
+
+        // グローバル関数（HTMLから呼び出すため）
+        let inventoryUI;
+
+        function switchTab(tabName) {
+            inventoryUI.switchTab(tabName);
+        }
+
+        function showEvolvedItemPopup(itemId) {
+            inventoryUI.showEvolvedItemPopup(itemId);
+        }
+
+        function closePopup() {
+            inventoryUI.closePopup();
+        }
+
+        // アプリケーション初期化
+        document.addEventListener('DOMContentLoaded', function () {
+            // UIインスタンス作成
+            inventoryUI = new InventoryUI();
+
+            // 初期化
+            inventoryUI.init();
+
+            console.log('アイテム一覧UIが初期化されました');
+            console.log(`一般宝物: ${ITEM_DATA.general.length}個`);
+            console.log(`進化宝物: ${ITEM_DATA.evolution.length}個`);
+        });
+
+        // 画像読み込みエラー処理
+        function handleImageError(img) {
+            img.style.display = 'none';
+            console.warn('画像が読み込めませんでした:', img.src);
+        }
+
+        // 言語切り替え関数
+        function switchLanguage(lang) {
+            if (lang === 'ja') {
+                window.location.href = 'index.html';
+            } else if (lang === 'ko') {
+                window.location.href = 'index_ko.html';
+            }
+        }
+    </script>
+</body>
+
+</html>
