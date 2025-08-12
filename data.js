@@ -3777,6 +3777,17 @@ hasPassiveTag: true,
 booknone: true
 },
 {
+id: 'tr_event_90',
+name: '神秘的な生命の薬水瓶',
+rarity: 'S',
+canEvolve: false,
+effect: '2025年12月31日まで強化値に応じて出席時、60~90%の確率でクリスタル1個獲得',
+method: 'クルトック集めイベント報酬で獲得',
+description: '神秘的な力が込められた生命の薬水瓶。蓋を開けた瞬間、骨、肉、森の命を意味する花の気が立ち上る。\n*売却時、再購入が不可能な宝物です。',
+hasPassiveTag: true,
+booknone: true
+},
+{
 id: 'tr_event_91',
 name: 'パーティーランクリスタル記念チケット1',
 rarity: 'S',

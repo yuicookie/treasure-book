@@ -3778,6 +3778,17 @@ hasPassiveTag: true,
 booknone: true
 },
 {
+id: 'tr_event_90',
+name: '신묘한 생명의 약수병',
+rarity: 'S',
+canEvolve: false,
+effect: '2025년 12월 31일까지 출석시 60% 확률로 크리스탈 1개 획득',
+method: '꿀떡 모으기 이벤트 보상으로 획득',
+description: '신묘한 힘이 담긴 생명의 약수병. 뚜껑을 연 순간 뼈살이 꽃, 살살이 꽃, 쓿살이 꽃의 기운이 피어오른다.\n*판매시 재구매가 불가능한 보물입니다.',
+hasPassiveTag: true,
+booknone: true
+},
+{
 id: 'tr_event_91',
 name: '파티런 크리스탈 기념 티켓 1',
 rarity: 'S',
