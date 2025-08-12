@@ -88,8 +88,12 @@
                 border-radius: 15px;
             }
 
-            .header {
-                padding-bottom: 10px;
+            .header-toggle-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+                top: 8px;
+                right: 8px;
             }
 
             .title {
@@ -157,15 +161,16 @@
             }
 
     		.popup-overlay {
-        		padding: 10px 60px;  /* 左右に大きな余白を追加 */
+        		padding: 10px 20px;  /* 左右の余白を削減 */
     		}
 
     		.popup {
-        		padding: 10px;
-        		max-width: none;           /* 幅制限を解除 */
-        		width: 100%;               /* 利用可能幅を100%使用 */
+        		padding: 15px;
+        		max-width: 350px;          /* 幅を制限して縦長に */
+        		width: 350px;              /* 固定幅で縦長効果 */
         		max-height: calc(100vh - 20px);  /* 縦幅を画面いっぱいに */
-        		height: calc(100vh - 20px);      /* 固定の高い縦幅 */
+        		height: auto;              /* 高さは自動調整 */
+        		min-height: calc(100vh - 40px);  /* 最小高さを設定して縦長に */
     		}
         }
 
@@ -177,10 +182,47 @@
         .header {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            padding-bottom: 15px;
             border-bottom: 2px solid #e0e0e0;
             flex-shrink: 0;
+            position: relative;
+        }
+
+        .header-toggle-btn {
+            position: absolute;
+            top: 5px;
+            right: -10px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s ease;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-toggle-btn:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .header-content.collapsed {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            opacity: 0;
         }
 
         .title {
@@ -201,6 +243,7 @@
         .tab-buttons {
             display: flex;
             gap: 10px;
+            padding-bottom: 10px;
             justify-content: center; /* ボタンを中央揃えにする */
         }
 
@@ -349,7 +392,7 @@
         */
         .inventory-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: repeat(auto-fill, calc((100% - 36px) / 7));
             gap: 6px;
             flex: 1;
             overflow-y: auto;
@@ -360,6 +403,8 @@
             position: relative;
             margin-top: 10px;
             min-height: 0;
+            justify-content: start;
+            align-content: start;
         }
 
         .inventory-grid::-webkit-scrollbar {
@@ -794,26 +839,152 @@
                 font-size: 12px;
             }
         }
+		/*
+        =================================
+        検索オプション
+        =================================
+        */
+        .search-options {
+            margin: 10px 0 5px 0;
+        }
+
+        .search-checkboxes {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .search-checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            color: #666;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .search-checkboxes input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .search-checkboxes input[type="checkbox"]:checked + span,
+        .search-checkboxes label:has(input[type="checkbox"]:checked) {
+            color: #29b6f6;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .search-checkboxes {
+                gap: 10px;
+                font-size: 12px;
+            }
+
+            .search-checkboxes label {
+                font-size: 12px;
+            }
+        }
+
+        /*
+        =================================
+        検索ボックス
+        =================================
+        */
+        .search-container {
+            position: relative;
+            margin: 10px 0;
+        }
+
+        #searchBox {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        #searchBox:focus {
+            border-color: #29b6f6;
+            box-shadow: 0 0 10px rgba(41, 182, 246, 0.3);
+        }
+
+        .search-clear-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .search-clear-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            #searchBox {
+                font-size: 14px;
+                padding: 8px 35px 8px 12px;
+            }
+
+            .search-clear-btn {
+                width: 20px;
+                height: 20px;
+                font-size: 14px;
+                right: 8px;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div class="update-version">Ver:12.7<br>更新日：2025年7月20日</div>
+    <div class="update-version">Ver:13.0<br>更新日:2025年8月12日</div>
     <div class="book-frame">
-        <div class="inventory-container">
+<div class="inventory-container">
 <div class="header">
-    <div class="title">
-        📖 宝物図鑑
-        <div class="language-selector">
-            <label><input type="radio" name="language" value="ja" checked onchange="switchLanguage(this.value)"> 日本語</label>
-            <label><input type="radio" name="language" value="ko" onchange="switchLanguage(this.value)"> 한국어</label>
+    <button class="header-toggle-btn" id="headerToggleBtn" onclick="inventoryUI.toggleHeader()">▲</button>
+    <div class="header-content" id="headerContent">
+        <div class="title">
+            📖 宝物図鑑
+            <div class="language-selector">
+                <label><input type="radio" name="language" value="ja" checked onchange="switchLanguage(this.value)"> 日本語</label>
+                <label><input type="radio" name="language" value="ko" onchange="switchLanguage(this.value)"> 한국어</label>
+            </div>
+        </div>
+        <div class="search-options">
+            <div class="search-checkboxes">
+                <label><input type="checkbox" id="searchName" checked onchange="inventoryUI.onSearchOptionChange()"> 宝物名</label>
+                <label><input type="checkbox" id="searchEffect" checked onchange="inventoryUI.onSearchOptionChange()"> 装備効果</label>
+                <label><input type="checkbox" id="searchMethod" onchange="inventoryUI.onSearchOptionChange()"> 入手方法</label>
+                <label><input type="checkbox" id="searchDescription" onchange="inventoryUI.onSearchOptionChange()"> 説明</label>
+            </div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchBox" placeholder="検索したい文字を入力..." onInput="inventoryUI.performSearch(this.value)">
+            <button class="search-clear-btn" id="searchClearBtn" onclick="inventoryUI.clearSearch()" style="display: none;">×</button>
         </div>
     </div>
-    <div class="tab-buttons">
-        <button class="tab-btn active" id="generalTab" onclick="switchTab('general')">一般宝物</button>
-        <button class="tab-btn" id="evolutionTab" onclick="switchTab('evolution')">進化宝物</button>
-        <button class="tab-btn" id="blessedTab" onclick="switchTab('blessed')">祝福宝物</button>
-    </div>
+        <div class="tab-buttons">
+            <button class="tab-btn active" id="generalTab" onclick="switchTab('general')">一般宝物</button>
+            <button class="tab-btn" id="evolutionTab" onclick="switchTab('evolution')">進化宝物</button>
+            <button class="tab-btn" id="blessedTab" onclick="switchTab('blessed')">祝福宝物</button>
+        </div>
 </div>
 
             <div class="inventory-grid" id="inventoryGrid">
@@ -845,73 +1016,6 @@
     </div>
     <script src="data.js"></script>
     <script>
-        /*
-        =================================
-        ダミーデータ生成処理
-        =================================
-        */
-        // ダミーデータで322個まで拡張
-        function generateExtendedData() {
-            const rarities = ['C', 'C', 'C', 'B', 'B', 'A', 'S'];
-
-            // 一般宝物を322個まで拡張
-            for (let i = 11; i <= 322; i++) {
-                const randomRarity = rarities[Math.floor(Math.random() * rarities.length)];
-                const canEvolve = Math.random() > 0.7;
-
-                ITEM_DATA.general.push({
-                    id: `item_${i}`,
-                    name: `アイテム${i}`,
-                    rarity: randomRarity,
-                    canEvolve: canEvolve,
-                    effect: `様々な効果を提供します（アイテム${i}）`,
-                    method: `ゲーム進行を通じて獲得（アイテム${i}）`,
-                    description: `アイテム${i}の詳細な説明です。`,
-                    isDummy: true, // ダミーフラグを追加
-                    booknone: Math.random() > 0.7 // booknoneフラグを追加
-                });
-
-                // 進化可能なアイテムは進化版も作成
-                if (canEvolve) {
-                    const evolvedRarity = randomRarity === 'C' ? 'B' :
-                        randomRarity === 'B' ? 'A' : 'S';
-
-                    ITEM_DATA.evolution.push({
-                        id: `item_${i}_evolved`,
-                        name: `進化した${ITEM_DATA.general[ITEM_DATA.general.length - 1].name}`,
-                        rarity: evolvedRarity,
-                        canEvolve: true,
-                        effect: `強化された効果を提供します（進化アイテム${i}）`,
-                        method: `${ITEM_DATA.general[ITEM_DATA.general.length - 1].name}を進化させて獲得`,
-                        baseId: `item_${i}`,
-                        description: `進化したアイテム${i}の詳細な説明です。`,
-                        isDummy: true, // ダミーフラグを追加
-                        booknone: Math.random() > 0.7 // booknoneフラグを追加
-                    });
-
-                    // 祝福宝物も作成
-                    const blessedRarity = evolvedRarity === 'B' ? 'A' :
-                        evolvedRarity === 'A' ? 'S' : 'S';
-
-                    ITEM_DATA.blessed.push({
-                        id: `item_${i}_blessed`,
-                        name: `祝福された進化した${ITEM_DATA.general[ITEM_DATA.general.length - 1].name}`,
-                        rarity: blessedRarity,
-                        canEvolve: false,
-                        effect: `究極の効果を提供します（祝福アイテム${i}）`,
-                        method: `進化した${ITEM_DATA.general[ITEM_DATA.general.length - 1].name}を祝福して獲得`,
-                        baseId: `item_${i}_evolved`,
-                        description: `祝福されたアイテム${i}の詳細な説明です。`,
-                        isDummy: true, // ダミーフラグを追加
-                        booknone: Math.random() > 0.7 // booknoneフラグを追加
-                    });
-                }
-            }
-        }
-
-        // データ拡張を実行
-        // generateExtendedData();
-
         /*
         =================================
         ユーティリティ関数
@@ -952,6 +1056,7 @@
                 case 'B': return '#4fc3f7';  // 青色
                 case 'A': return '#FF9800';  // オレンジ色
                 case 'S': return '#9C27B0';  // 紫色
+                case 'U': return '#191919';  // 黒色
                 default: return '#808080';
             }
         }
@@ -973,6 +1078,20 @@
                     evolution: 0,
                     blessed: 0
                 };
+                this.isSearching = false; // 検索中かどうかのフラグ
+                this.searchResults = { // 検索結果を保持
+                    general: [],
+                    evolution: [],
+                    blessed: []
+                };
+                this.originalData = null; // 元のデータを保持
+                this.searchOptions = { // 検索オプションの状態
+                    name: true,
+                    effect: true,
+                    method: false,
+                    description: false
+                };
+                this.isHeaderCollapsed = false; // ヘッダーの開閉状態
             }
 
             /*
@@ -982,7 +1101,7 @@
             */
             // レアリティによるソート順序を定義
             getRaritySortOrder(rarity) {
-                const order = { 'S': 1, 'A': 2, 'B': 3, 'C': 4 };
+                const order = { 'S': 1, 'A': 2, 'B': 3, 'C': 4, 'U': 5 };
                 return order[rarity] || 999;
             }
 
@@ -1080,6 +1199,14 @@
                     slot.appendChild(passiveTagEffect);
                 }
 
+                // Useタグエフェクトを追加（パッシブタグと同じ位置に表示）
+                if (item.hasUseTag) {
+                    const useTagEffect = document.createElement('div');
+                    useTagEffect.className = 'passive-tag-effect'; // 同じクラスを使用
+                    useTagEffect.style.backgroundImage = `url('img/treasure_tag_use.webp')`;
+                    slot.appendChild(useTagEffect);
+                }
+
                 // Sランクの祝福宝物の場合、エフェクトアニメーションを追加（最上位に表示）
                 if (this.currentTab === 'blessed' && item.rarity === 'S') {
                     const effectAnimation = document.createElement('div');
@@ -1159,6 +1286,11 @@
                     iconHTML += `<div class="popup-passive-tag-effect" style="background-image: url('img/treasure_tag_passive.webp'); z-index: 5;"></div>`;
                 }
 
+                // Useタグエフェクトを追加（一番上に表示）
+                if (item.hasUseTag) {
+                    iconHTML += `<div class="popup-passive-tag-effect" style="background-image: url('img/treasure_tag_use.webp'); z-index: 5;"></div>`;
+                }
+
                 // Sランクの祝福宝物の場合、エフェクトアニメーションを追加（最上位に表示）
                 if (isBlessed && item.rarity === 'S') {
                     iconHTML += `<div class="popup-effect-animation" style="z-index: 6;"></div>`;
@@ -1167,13 +1299,14 @@
                 icon.innerHTML = iconHTML;
 
                 // アイテム名に色を適用
-                title.textContent = item.name;
+                title.textContent = item.name; //改行しない
                 title.style.color = getRarityColor(item.rarity);
 
                 effect.textContent = item.effect.replace(/\\n/g, '\n'); //'/n'で改行する
                 effect.style.whiteSpace = 'pre-line';
 
-                method.textContent = item.method;
+                method.textContent = item.method.replace(/\\n/g, '\n');
+                method.style.whiteSpace = 'pre-line';
 
                 // 進化可能なアイテムの場合
                 if (item.canEvolve) {
@@ -1249,6 +1382,11 @@
                 // パッシブタグエフェクトを追加（一番上に表示）
                 if (evolvedItem.hasPassiveTag) {
                     iconHTML += `<div class="passive-tag-effect" style="background-image: url('img/treasure_tag_passive.webp'); z-index: 5;"></div>`;
+                }
+
+                // Useタグエフェクトを追加（一番上に表示）
+                if (evolvedItem.hasUseTag) {
+                    iconHTML += `<div class="passive-tag-effect" style="background-image: url('img/treasure_tag_use.webp'); z-index: 5;"></div>`;
                 }
 
                 // Sランクの祝福宝物の場合、エフェクトアニメーションを追加（最上位に表示）
@@ -1383,8 +1521,8 @@
                 document.getElementById('evolutionTab').classList.toggle('active', tabName === 'evolution');
                 document.getElementById('blessedTab').classList.toggle('active', tabName === 'blessed');
 
-                // アイテムリスト更新
-                const items = ITEM_DATA[tabName];
+                // アイテムリスト更新（検索中の場合は検索結果を、そうでなければ全データを表示）
+                const items = this.isSearching ? this.searchResults[tabName] : ITEM_DATA[tabName];
                 this.createInventoryGrid(items);
 
                 // 保存されたスクロール位置を復元
@@ -1416,6 +1554,114 @@
                 document.head.appendChild(style);
             }
 
+			// 検索実行
+            performSearch(searchTerm) {
+                const searchBox = document.getElementById('searchBox');
+                const clearBtn = document.getElementById('searchClearBtn');
+
+                if (!searchTerm.trim()) {
+                    // 検索語が空の場合、検索をクリアする
+                    this.clearSearch();
+                    return;
+                }
+
+                // クリアボタンを表示
+                clearBtn.style.display = 'block';
+
+                this.isSearching = true;
+                const searchTerms = searchTerm.toLowerCase().split(/\s+/).filter(term => term.length > 0);
+
+                // 各カテゴリで検索を実行
+                ['general', 'evolution', 'blessed'].forEach(category => {
+                    this.searchResults[category] = ITEM_DATA[category].filter(item => {
+                        // チェックされた項目から検索対象のテキストを収集
+                        const searchTargets = [];
+
+                        if (this.searchOptions.name) {
+                            searchTargets.push(item.name.toLowerCase());
+                        }
+                        if (this.searchOptions.effect) {
+                            searchTargets.push(item.effect.toLowerCase());
+                        }
+                        if (this.searchOptions.method) {
+                            searchTargets.push(item.method.toLowerCase());
+                        }
+                        if (this.searchOptions.description && item.description) {
+                            searchTargets.push(item.description.toLowerCase());
+                        }
+
+                        // 検索対象がない場合はfalse
+                        if (searchTargets.length === 0) {
+                            return false;
+                        }
+
+                        // 全ての検索語が、いずれかの検索対象に含まれているかチェック（AND検索）
+                        return searchTerms.every(searchTerm => {
+                            return searchTargets.some(target => target.includes(searchTerm));
+                        });
+                    });
+                });
+
+                // 現在のタブを再描画
+                this.switchTab(this.currentTab);
+            }
+
+            // 検索オプションの変更時
+            onSearchOptionChange() {
+                // チェックボックスの状態を更新
+                this.searchOptions.name = document.getElementById('searchName').checked;
+                this.searchOptions.effect = document.getElementById('searchEffect').checked;
+                this.searchOptions.method = document.getElementById('searchMethod').checked;
+                this.searchOptions.description = document.getElementById('searchDescription').checked;
+
+                // 検索ボックスに値がある場合は再検索
+                const searchBox = document.getElementById('searchBox');
+                if (searchBox.value.trim()) {
+                    this.performSearch(searchBox.value);
+                }
+            }
+
+            // ヘッダーの開閉切り替え
+            toggleHeader() {
+                const headerContent = document.getElementById('headerContent');
+                const toggleBtn = document.getElementById('headerToggleBtn');
+                const header = document.querySelector('.header');
+
+                this.isHeaderCollapsed = !this.isHeaderCollapsed;
+
+                if (this.isHeaderCollapsed) {
+                    headerContent.classList.add('collapsed');
+                    header.classList.add('collapsed');
+                    toggleBtn.textContent = '▼';
+                    toggleBtn.title = 'ヘッダーを表示';
+                } else {
+                    headerContent.classList.remove('collapsed');
+                    header.classList.remove('collapsed');
+                    toggleBtn.textContent = '▲';
+                    toggleBtn.title = 'ヘッダーを非表示';
+                }
+            }
+
+            // 検索クリア
+            clearSearch() {
+                const searchBox = document.getElementById('searchBox');
+                const clearBtn = document.getElementById('searchClearBtn');
+
+                searchBox.value = '';
+                clearBtn.style.display = 'none';
+                this.isSearching = false;
+
+                // 検索結果をクリア
+                this.searchResults = {
+                    general: [],
+                    evolution: [],
+                    blessed: []
+                };
+
+                // 現在のタブを再描画（全データ表示）
+                this.switchTab(this.currentTab);
+            }
+
             // イベントリスナー設定
             setupEventListeners() {
                 // オーバーレイクリックで閉じる
@@ -1445,8 +1691,16 @@
             inventoryUI.showEvolvedItemPopup(itemId);
         }
 
-        function closePopup() {
+		function closePopup() {
             inventoryUI.closePopup();
+        }
+
+        function onSearchOptionChange() {
+            inventoryUI.onSearchOptionChange();
+        }
+
+        function toggleHeader() {
+            inventoryUI.toggleHeader();
         }
 
         // アプリケーション初期化
