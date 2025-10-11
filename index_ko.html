@@ -889,6 +889,40 @@
 
         /*
         =================================
+        バージョンフィルタボタン
+        =================================
+        */
+        .version-filter-btn {
+            padding: 5px 15px;
+            border: 2px solid #29b6f6;
+            border-radius: 15px;
+            background: white;
+            color: #29b6f6;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .version-filter-btn:hover {
+            background: #e3f2fd;
+        }
+
+        .version-filter-btn.active {
+            background: #29b6f6;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .version-filter-btn {
+                padding: 4px 12px;
+                font-size: 12px;
+            }
+        }
+
+        /*
+        =================================
         検索ボックス
         =================================
         */
@@ -973,6 +1007,7 @@
                 <label><input type="checkbox" id="searchEffect" checked onchange="inventoryUI.onSearchOptionChange()"> 장착효과</label>
                 <label><input type="checkbox" id="searchMethod" onchange="inventoryUI.onSearchOptionChange()"> 수집방법</label>
                 <label><input type="checkbox" id="searchDescription" onchange="inventoryUI.onSearchOptionChange()"> 설명</label>
+                <button class="version-filter-btn" id="versionFilterBtn" onclick="inventoryUI.toggleVersionFilter('13.3')">Ver. 13.3</button>
             </div>
         </div>
         <div class="search-container">
@@ -1092,6 +1127,8 @@
                     description: false
                 };
                 this.isHeaderCollapsed = false; // ヘッダーの開閉状態
+                this.isVersionFiltered = false; // バージョンフィルタ状態
+                this.currentVersion = null; // 現在のフィルタバージョン
             }
 
             /*
@@ -1569,31 +1606,19 @@
                 clearBtn.style.display = 'block';
 
                 this.isSearching = true;
-
-                // バージョン番号での検索をチェック
-                const trimmedSearchTerm = searchTerm.trim();
-                const isVersionSearch = /^\d+\.\d+$/.test(trimmedSearchTerm);  // 数字.数字のパターンをチェック
-
-                if (isVersionSearch) {
-                    // バージョン番号で検索
-                    const versionIds = VERSION_DATA[trimmedSearchTerm] || [];
-
-                    ['general', 'evolution', 'blessed'].forEach(category => {
-                        this.searchResults[category] = ITEM_DATA[category].filter(item => {
-                            return versionIds.includes(item.id);
-                        });
-                    });
-
-                    // 現在のタブを再描画
-                    this.switchTab(this.currentTab);
-                    return;
-                }
-
                 const searchTerms = searchTerm.toLowerCase().split(/\s+/).filter(term => term.length > 0);
 
                 // 各カテゴリで検索を実行
                 ['general', 'evolution', 'blessed'].forEach(category => {
-                    this.searchResults[category] = ITEM_DATA[category].filter(item => {
+                    // バージョンフィルタが有効な場合は、フィルタ済みデータから検索
+                    const sourceData = this.isVersionFiltered 
+                        ? ITEM_DATA[category].filter(item => {
+                            const versionIds = VERSION_DATA[this.currentVersion] || [];
+                            return versionIds.includes(item.id);
+                        })
+                        : ITEM_DATA[category];
+
+                        this.searchResults[category] = sourceData.filter(item => {
                         // チェックされた項目から検索対象のテキストを収集
                         const searchTargets = [];
 
@@ -1669,16 +1694,81 @@
 
                 searchBox.value = '';
                 clearBtn.style.display = 'none';
-                this.isSearching = false;
 
-                // 検索結果をクリア
-                this.searchResults = {
-                    general: [],
-                    evolution: [],
-                    blessed: []
-                };
+                // バージョンフィルタが有効な場合は、検索フラグをそのまま維持
+                if (!this.isVersionFiltered) {
+                    this.isSearching = false;
+                }
 
-                // 現在のタブを再描画（全データ表示）
+                // 検索結果をクリア(バージョンフィルタが有効な場合は再設定)
+                if (this.isVersionFiltered) {
+                    const versionIds = VERSION_DATA[this.currentVersion] || [];
+                    ['general', 'evolution', 'blessed'].forEach(category => {
+                        this.searchResults[category] = ITEM_DATA[category].filter(item => {
+                            return versionIds.includes(item.id);
+                        });
+                    });
+                } else {
+                    this.searchResults = {
+                        general: [],
+                        evolution: [],
+                        blessed: []
+                    };
+                }
+
+                // 現在のタブを再描画
+                this.switchTab(this.currentTab);
+            }
+
+            // バージョンフィルタ切り替え
+            toggleVersionFilter(version) {
+                const filterBtn = document.getElementById('versionFilterBtn');
+                const searchBox = document.getElementById('searchBox');
+
+                // フィルタ状態を切り替え
+                this.isVersionFiltered = !this.isVersionFiltered;
+
+                if (this.isVersionFiltered) {
+                    // フィルタを有効化
+                    this.currentVersion = version;
+                    filterBtn.classList.add('active');
+
+                    // 検索中フラグを立てる
+                    this.isSearching = true;
+
+                    // 検索ボックスに値がある場合は検索を再実行
+                    if (searchBox.value.trim()) {
+                        this.performSearch(searchBox.value);
+                    } else {
+                        // バージョンに該当するアイテムIDを取得
+                        const versionIds = VERSION_DATA[version] || [];
+
+                        // 各カテゴリでフィルタリング
+                        ['general', 'evolution', 'blessed'].forEach(category => {
+                            this.searchResults[category] = ITEM_DATA[category].filter(item => {
+                                return versionIds.includes(item.id);
+                            });
+                        });
+                    }
+                } else {
+                    // フィルタを解除
+                    this.currentVersion = null;
+                    filterBtn.classList.remove('active');
+
+                    // 検索ボックスに値がある場合は検索を再実行、なければ完全にクリア
+                    if (searchBox.value.trim()) {
+                        this.performSearch(searchBox.value);
+                    } else {
+                        this.isSearching = false;
+                        this.searchResults = {
+                            general: [],
+                            evolution: [],
+                            blessed: []
+                        };
+                    }
+                }
+
+                // 現在のタブを再描画
                 this.switchTab(this.currentTab);
             }
 
@@ -1721,6 +1811,10 @@
 
         function toggleHeader() {
             inventoryUI.toggleHeader();
+        }
+
+        function toggleVersionFilter(version) {
+            inventoryUI.toggleVersionFilter(version);
         }
 
         // アプリケーション初期化

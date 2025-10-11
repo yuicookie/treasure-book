@@ -66,9 +66,6 @@ const VERSION_DATA = {
 'tr_ga068_m',
 'tr_ga068_m_blessed',
 ],
-// '13.4': [
-// 次のバージョンのアイテムIDをここに追加
-// ]
 };
 
 /*
