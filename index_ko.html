@@ -988,7 +988,7 @@
 </head>
 
 <body>
-    <div class="update-version">Ver. 13.3<br>갱신일 2025년10월11일</div>
+    <div class="update-version">Ver. 13.4<br>갱신일 2025년11월9일</div>
     <div class="book-frame">
 <div class="inventory-container">
 <div class="header">
@@ -1003,11 +1003,13 @@
         </div>
         <div class="search-options">
             <div class="search-checkboxes">
+                <button class="version-filter-btn" id="versionFilterBtn133" onclick="inventoryUI.toggleVersionFilter('13.3')">Ver 13.3</button>
+                <button class="version-filter-btn" id="versionFilterBtn134" onclick="inventoryUI.toggleVersionFilter('13.4')">Ver 13.4</button>
+                <div style="width: 100%; height: 0;"></div>
                 <label><input type="checkbox" id="searchName" checked onchange="inventoryUI.onSearchOptionChange()"> 보물명</label>
                 <label><input type="checkbox" id="searchEffect" checked onchange="inventoryUI.onSearchOptionChange()"> 장착효과</label>
                 <label><input type="checkbox" id="searchMethod" onchange="inventoryUI.onSearchOptionChange()"> 수집방법</label>
                 <label><input type="checkbox" id="searchDescription" onchange="inventoryUI.onSearchOptionChange()"> 설명</label>
-                <button class="version-filter-btn" id="versionFilterBtn" onclick="inventoryUI.toggleVersionFilter('13.3')">Ver. 13.3</button>
             </div>
         </div>
         <div class="search-container">
@@ -1722,16 +1724,46 @@
 
             // バージョンフィルタ切り替え
             toggleVersionFilter(version) {
-                const filterBtn = document.getElementById('versionFilterBtn');
                 const searchBox = document.getElementById('searchBox');
 
-                // フィルタ状態を切り替え
-                this.isVersionFiltered = !this.isVersionFiltered;
+                // 同じバージョンをクリックした場合はトグル、違うバージョンの場合は切り替え
+                if (this.isVersionFiltered && this.currentVersion === version) {
+                    // フィルター解除
+                    this.isVersionFiltered = false;
+                    this.currentVersion = null;
 
-                if (this.isVersionFiltered) {
-                    // フィルタを有効化
+                    // 全てのバージョンボタンを非アクティブに
+                    document.querySelectorAll('.version-filter-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+
+                    // 検索ボックスに値がある場合は検索を再実行、なければ完全にクリア
+                    if (searchBox.value.trim()) {
+                        this.performSearch(searchBox.value);
+                    } else {
+                        this.isSearching = false;
+                        this.searchResults = {
+                            general: [],
+                            evolution: [],
+                            blessed: []
+                        };
+                    }
+                } else {
+                    // フィルター有効化または切り替え
+                    this.isVersionFiltered = true;
                     this.currentVersion = version;
-                    filterBtn.classList.add('active');
+
+                    // 全てのバージョンボタンのアクティブ状態を更新
+                    document.querySelectorAll('.version-filter-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+
+                    // 現在のバージョンのボタンをアクティブに
+                    const activeBtn = Array.from(document.querySelectorAll('.version-filter-btn'))
+                        .find(btn => btn.textContent.includes(version));
+                    if (activeBtn) {
+                        activeBtn.classList.add('active');
+                    }
 
                     // 検索中フラグを立てる
                     this.isSearching = true;
@@ -1749,22 +1781,6 @@
                                 return versionIds.includes(item.id);
                             });
                         });
-                    }
-                } else {
-                    // フィルタを解除
-                    this.currentVersion = null;
-                    filterBtn.classList.remove('active');
-
-                    // 検索ボックスに値がある場合は検索を再実行、なければ完全にクリア
-                    if (searchBox.value.trim()) {
-                        this.performSearch(searchBox.value);
-                    } else {
-                        this.isSearching = false;
-                        this.searchResults = {
-                            general: [],
-                            evolution: [],
-                            blessed: []
-                        };
                     }
                 }
 
