@@ -3,7 +3,7 @@
 バージョン管理用の配列
 =================================
 */
-const VERSION_DATA = {
+const VERSION_DATA_KO = {
 '13.3': [
 // 追加
 'tr_ch83',
@@ -116,7 +116,7 @@ const VERSION_DATA = {
 アイテムデータ定義
 =================================
 */
-const ITEM_DATA = {
+const ITEM_DATA_KO = {
 // 一般宝物（進化前）
 general: [
 {

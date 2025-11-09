@@ -1407,7 +1407,7 @@
             // 進化プレビューHTML作成
             createEvolutionPreview(evolvedItem) {
                 // 祝福宝物かどうかを判定
-                const isBlessed = ITEM_DATA.blessed.some(item => item.id === evolvedItem.id);
+                const isBlessed = ITEM_DATA_KO.blessed.some(item => item.id === evolvedItem.id);
                 const tabType = isBlessed ? 'blessed' : 'evolution';
 
                 let iconHTML = `<div class="evolution-item-image" style="background-image: url('${getItemImagePath(evolvedItem.id, true)}'); z-index: 4;"></div>`;
@@ -1447,17 +1447,17 @@
             }
             // 進化したアイテムを検索
             findEvolvedItem(baseId) {
-                return ITEM_DATA.evolution.find(item => item.baseId === baseId);
+                return ITEM_DATA_KO.evolution.find(item => item.baseId === baseId);
             }
 
             // 祝福されたアイテムを検索
             findBlessedItem(baseId) {
-                return ITEM_DATA.blessed.find(item => item.baseId === baseId);
+                return ITEM_DATA_KO.blessed.find(item => item.baseId === baseId);
             }
             // 進化したアイテムのポップアップ表示
             showEvolvedItemPopup(itemId) {
                 // 進化アイテムを検索
-                let evolvedItem = ITEM_DATA.evolution.find(item => item.id === itemId);
+                let evolvedItem = ITEM_DATA_KO.evolution.find(item => item.id === itemId);
                 if (evolvedItem) {
                     // 一般宝物タブから進化宝物を開く場合、タブを一時的に切り替え
                     const originalTab = this.currentTab;
@@ -1468,7 +1468,7 @@
                 }
 
                 // 祝福アイテムを検索
-                let blessedItem = ITEM_DATA.blessed.find(item => item.id === itemId);
+                let blessedItem = ITEM_DATA_KO.blessed.find(item => item.id === itemId);
                 if (blessedItem) {
                     // 進化宝物タブから祝福宝物を開く場合、タブを一時的に切り替え
                     const originalTab = this.currentTab;
@@ -1494,20 +1494,20 @@
                     // 元のタブに戻す
                     if (this.popupHistory.length === 1) {
                         // 最初のアイテムの場合、そのアイテムが属するタブに戻す
-                        if (ITEM_DATA.general.some(item => item.id === previousItem.id)) {
+                        if (ITEM_DATA_KO.general.some(item => item.id === previousItem.id)) {
                             this.currentTab = 'general';
-                        } else if (ITEM_DATA.evolution.some(item => item.id === previousItem.id)) {
+                        } else if (ITEM_DATA_KO.evolution.some(item => item.id === previousItem.id)) {
                             this.currentTab = 'evolution';
-                        } else if (ITEM_DATA.blessed.some(item => item.id === previousItem.id)) {
+                        } else if (ITEM_DATA_KO.blessed.some(item => item.id === previousItem.id)) {
                             this.currentTab = 'blessed';
                         }
                     } else {
                         // 2つ以上ある場合は、前のアイテムが所属するタブに切り替える
-                        if (ITEM_DATA.general.some(item => item.id === previousItem.id)) {
+                        if (ITEM_DATA_KO.general.some(item => item.id === previousItem.id)) {
                             this.currentTab = 'general';
-                        } else if (ITEM_DATA.evolution.some(item => item.id === previousItem.id)) {
+                        } else if (ITEM_DATA_KO.evolution.some(item => item.id === previousItem.id)) {
                             this.currentTab = 'evolution';
-                        } else if (ITEM_DATA.blessed.some(item => item.id === previousItem.id)) {
+                        } else if (ITEM_DATA_KO.blessed.some(item => item.id === previousItem.id)) {
                             this.currentTab = 'blessed';
                         }
                     }
@@ -1561,7 +1561,7 @@
                 document.getElementById('blessedTab').classList.toggle('active', tabName === 'blessed');
 
                 // アイテムリスト更新（検索中の場合は検索結果を、そうでなければ全データを表示）
-                const items = this.isSearching ? this.searchResults[tabName] : ITEM_DATA[tabName];
+                const items = this.isSearching ? this.searchResults[tabName] : ITEM_DATA_KO[tabName];
                 this.createInventoryGrid(items);
 
                 // 保存されたスクロール位置を復元
@@ -1614,11 +1614,11 @@
                 ['general', 'evolution', 'blessed'].forEach(category => {
                     // バージョンフィルタが有効な場合は、フィルタ済みデータから検索
                     const sourceData = this.isVersionFiltered 
-                        ? ITEM_DATA[category].filter(item => {
-                            const versionIds = VERSION_DATA[this.currentVersion] || [];
+                        ? ITEM_DATA_KO[category].filter(item => {
+                            const versionIds = VERSION_DATA_KO[this.currentVersion] || [];
                             return versionIds.includes(item.id);
                         })
-                        : ITEM_DATA[category];
+                        : ITEM_DATA_KO[category];
 
                         this.searchResults[category] = sourceData.filter(item => {
                         // チェックされた項目から検索対象のテキストを収集
@@ -1704,9 +1704,9 @@
 
                 // 検索結果をクリア(バージョンフィルタが有効な場合は再設定)
                 if (this.isVersionFiltered) {
-                    const versionIds = VERSION_DATA[this.currentVersion] || [];
+                    const versionIds = VERSION_DATA_KO[this.currentVersion] || [];
                     ['general', 'evolution', 'blessed'].forEach(category => {
-                        this.searchResults[category] = ITEM_DATA[category].filter(item => {
+                        this.searchResults[category] = ITEM_DATA_KO[category].filter(item => {
                             return versionIds.includes(item.id);
                         });
                     });
@@ -1773,11 +1773,11 @@
                         this.performSearch(searchBox.value);
                     } else {
                         // バージョンに該当するアイテムIDを取得
-                        const versionIds = VERSION_DATA[version] || [];
+                        const versionIds = VERSION_DATA_KO[version] || [];
 
                         // 各カテゴリでフィルタリング
                         ['general', 'evolution', 'blessed'].forEach(category => {
-                            this.searchResults[category] = ITEM_DATA[category].filter(item => {
+                            this.searchResults[category] = ITEM_DATA_KO[category].filter(item => {
                                 return versionIds.includes(item.id);
                             });
                         });
@@ -1842,8 +1842,8 @@
             inventoryUI.init();
 
             console.log('アイテム一覧UIが初期化されました');
-            console.log(`一般宝物: ${ITEM_DATA.general.length}個`);
-            console.log(`進化宝物: ${ITEM_DATA.evolution.length}個`);
+            console.log(`一般宝物: ${ITEM_DATA_KO.general.length}個`);
+            console.log(`進化宝物: ${ITEM_DATA_KO.evolution.length}個`);
         });
 
         // 画像読み込みエラー処理
