@@ -549,6 +549,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            margin-top: 20px;
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 2px solid #e0e0e0;
@@ -711,6 +712,100 @@
         */
         .popup:not(.evolved) {
             border: 3px solid #ff9800;
+        }
+
+        /*
+        =================================
+        共有ボタン
+        =================================
+        */
+        .share-btn {
+            position: absolute;
+            top: 5px;
+            left: 15px;
+            padding: 8px 15px;
+            border: 2px solid #ff9800;
+            border-radius: 20px;
+            background: white;
+            color: #ff9800;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .share-btn:hover {
+            background: #ff9800;
+            color: white;
+        }
+
+        .share-btn:active {
+            background: #f57c00;
+            transform: scale(0.95);
+        }
+
+        .share-btn.copied {
+            background: #66bb6a;
+            border-color: #66bb6a;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .share-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+                top: 3px;
+                left: 10px;
+            }
+        }
+
+        /*
+        =================================
+        韓国語名コピーボタン
+        =================================
+        */
+        .copy-korean-btn {
+            position: absolute;
+            top: 5px;
+            right: 55px;
+            padding: 8px 15px;
+            border: 2px solid #4fc3f7;
+            border-radius: 20px;
+            background: white;
+            color: #4fc3f7;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .copy-korean-btn:hover {
+            background: #4fc3f7;
+            color: white;
+        }
+
+        .copy-korean-btn:active {
+            background: #29b6f6;
+            transform: scale(0.95);
+        }
+
+        .copy-korean-btn.copied {
+            background: #66bb6a;
+            border-color: #66bb6a;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .copy-korean-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+                top: 3px;
+                right: 35px;
+            }
         }
 
         /*
@@ -1032,6 +1127,8 @@
 
     <div class="popup-overlay" id="popupOverlay">
         <div class="popup" id="popup">
+            <button class="share-btn" id="shareBtn" onclick="inventoryUI.shareItem()">🔗공유</button>
+            <button class="copy-korean-btn" id="copyKoreanBtn" style="display: none;">🔍보물명 복사</button>
             <button class="close-btn" onclick="closePopup()"></button>
             <div class="popup-header">
                 <div class="popup-icon" id="popupIcon"></div>
@@ -1058,6 +1155,18 @@
         ユーティリティ関数
         =================================
         */
+        // 韓国語名を取得する関数
+        function getKoreanName(itemId) {
+            // 全カテゴリから検索
+            for (let category of ['general', 'evolution', 'blessed']) {
+                const koItem = ITEM_DATA_KO[category].find(item => item.id === itemId);
+                if (koItem) {
+                    return koItem.name;
+                }
+            }
+            return null; // 見つからない場合
+        }
+
         // アイテム画像パス生成関数
         function getItemImagePath(itemId, isEvolved = false) {
             // 祝福宝物の場合、進化宝物と同じ画像を使用
@@ -1341,6 +1450,85 @@
                 title.textContent = item.name; //改行しない
                 title.style.color = getRarityColor(item.rarity);
 
+                // // 韓国語名コピーボタンの設定
+                // const copyKoreanBtn = document.getElementById('copyKoreanBtn');
+                // const koreanName = getKoreanName(item.id);
+
+                // if (koreanName) {
+                //     copyKoreanBtn.style.display = 'block';
+                //     copyKoreanBtn.textContent = '🔍보물명 복사';
+                //     copyKoreanBtn.classList.remove('copied');
+                //     copyKoreanBtn.onclick = () => {
+                //         // 改行コードを半角スペースに変換
+                //         let processedName = koreanName.replace(/\\n/g, ' ').replace(/\n/g, ' ');
+
+                //         // 17文字以上の場合は16文字まで切り取り
+                //         if (processedName.length > 16) {
+                //             processedName = processedName.substring(0, 16);
+                //         }
+
+                //         // 代替コピー方法(古いブラウザ対応)
+                //         const textArea = document.createElement('textarea');
+                //         textArea.value = processedName;
+                //         textArea.style.position = 'fixed';
+                //         textArea.style.left = '-999999px';
+                //         textArea.style.top = '-999999px';
+                //         document.body.appendChild(textArea);
+                //         textArea.focus();
+                //         textArea.select();
+
+                //         try {
+                //             document.execCommand('copy');
+                //             textArea.remove();
+
+                //             // コピー成功の表示
+                //             copyKoreanBtn.textContent = '✓';
+                //             copyKoreanBtn.classList.add('copied');
+
+                //             // 2秒後に元に戻す
+                //             setTimeout(() => {
+                //                 copyKoreanBtn.textContent = '🔍보물명 복사';
+                //                 copyKoreanBtn.classList.remove('copied');
+                //             }, 2000);
+                //         } catch (err) {
+                //             console.error('コピーに失敗しました:', err);
+                //             textArea.remove();
+                //             alert('コピーに失敗しました');
+                //         }
+                //     };
+                // } else {
+                //     copyKoreanBtn.style.display = 'none';
+                // }
+
+                // 推奨の方法
+                // 韓国語名コピーボタンの設定
+                const copyKoreanBtn = document.getElementById('copyKoreanBtn');
+                const koreanName = getKoreanName(item.id);
+
+                if (koreanName) {
+                    copyKoreanBtn.style.display = 'block';
+                    copyKoreanBtn.textContent = '🔍보물명 복사';
+                    copyKoreanBtn.classList.remove('copied');
+                    copyKoreanBtn.onclick = () => {
+                        navigator.clipboard.writeText(koreanName).then(() => {
+                            // コピー成功の表示
+                            copyKoreanBtn.textContent = '✓';
+                            copyKoreanBtn.classList.add('copied');
+
+                            // 2秒後に元に戻す
+                            setTimeout(() => {
+                                copyKoreanBtn.textContent = '🔍보물명 복사';
+                                copyKoreanBtn.classList.remove('copied');
+                            }, 2000);
+                        }).catch(err => {
+                            console.error('コピーに失敗しました:', err);
+                            alert('コピーに失敗しました');
+                        });
+                    };
+                } else {
+                    copyKoreanBtn.style.display = 'none';
+                }
+
                 effect.textContent = item.effect.replace(/\\n/g, '\n'); //'/n'で改行する
                 effect.style.whiteSpace = 'pre-line';
 
@@ -1526,6 +1714,7 @@
                 icon.style.backgroundImage = '';
                 document.getElementById('popupTitle').textContent = '';
                 document.getElementById('popupTitle').style.color = '';
+                document.getElementById('copyKoreanBtn').style.display = 'none';
                 document.getElementById('popupEffect').textContent = '';
                 document.getElementById('popupEffect').style.whiteSpace = '';
                 document.getElementById('popupMethod').textContent = '';
@@ -1788,6 +1977,76 @@
                 this.switchTab(this.currentTab);
             }
 
+            // 共有リンクを生成してコピー
+            shareItem() {
+                if (!this.currentPopupItem) return;
+
+                const itemId = this.currentPopupItem.id;
+                const baseUrl = window.location.origin + window.location.pathname;
+                const shareUrl = `${baseUrl}?item=${itemId}`;
+
+                // コピー処理
+                const textArea = document.createElement('textarea');
+                textArea.value = shareUrl;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+
+                try {
+                    document.execCommand('copy');
+                    textArea.remove();
+
+                    // コピー成功の表示
+                    const shareBtn = document.getElementById('shareBtn');
+                    const originalText = shareBtn.textContent;
+                    shareBtn.textContent = '✓';
+                    shareBtn.classList.add('copied');
+
+                    // 2秒後に元に戻す
+                    setTimeout(() => {
+                        shareBtn.textContent = originalText;
+                        shareBtn.classList.remove('copied');
+                    }, 2000);
+                } catch (err) {
+                    console.error('コピーに失敗しました:', err);
+                    textArea.remove();
+                    alert('コピーに失敗しました');
+                }
+            }
+
+            // URLパラメータから共有アイテムを開く
+            openSharedItem() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const itemId = urlParams.get('item');
+
+                if (itemId) {
+                    // 全カテゴリからアイテムを検索
+                    let foundItem = null;
+                    let foundCategory = null;
+
+                    for (let category of ['general', 'evolution', 'blessed']) {
+                        const item = ITEM_DATA[category].find(i => i.id === itemId);
+                        if (item) {
+                            foundItem = item;
+                            foundCategory = category;
+                            break;
+                        }
+                    }
+
+                    if (foundItem && foundCategory) {
+                        // タブを切り替えてポップアップを開く
+                        this.switchTab(foundCategory);
+                        // 少し遅延させてからポップアップを開く
+                        setTimeout(() => {
+                            this.showItemPopup(foundItem);
+                        }, 100);
+                    }
+                }
+            }
+
             // イベントリスナー設定
             setupEventListeners() {
                 // オーバーレイクリックで閉じる
@@ -1833,6 +2092,10 @@
             inventoryUI.toggleVersionFilter(version);
         }
 
+        function shareItem() {
+            inventoryUI.shareItem();
+        }
+
         // アプリケーション初期化
         document.addEventListener('DOMContentLoaded', function () {
             // UIインスタンス作成
@@ -1840,6 +2103,9 @@
 
             // 初期化
             inventoryUI.init();
+
+            // 共有リンクからのアクセスをチェック
+            inventoryUI.openSharedItem();
 
             console.log('アイテム一覧UIが初期化されました');
             console.log(`一般宝物: ${ITEM_DATA_KO.general.length}個`);
