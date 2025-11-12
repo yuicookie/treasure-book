@@ -1083,7 +1083,7 @@
 </head>
 
 <body>
-    <div class="update-version">Ver. 13.4<br>갱신일 2025년11월9일</div>
+    <div class="update-version">Ver. 13.4<br>갱신일 2025년11월12일</div>
     <div class="book-frame">
 <div class="inventory-container">
 <div class="header">
@@ -1450,57 +1450,6 @@
                 title.textContent = item.name; //改行しない
                 title.style.color = getRarityColor(item.rarity);
 
-                // // 韓国語名コピーボタンの設定
-                // const copyKoreanBtn = document.getElementById('copyKoreanBtn');
-                // const koreanName = getKoreanName(item.id);
-
-                // if (koreanName) {
-                //     copyKoreanBtn.style.display = 'block';
-                //     copyKoreanBtn.textContent = '🔍보물명 복사';
-                //     copyKoreanBtn.classList.remove('copied');
-                //     copyKoreanBtn.onclick = () => {
-                //         // 改行コードを半角スペースに変換
-                //         let processedName = koreanName.replace(/\\n/g, ' ').replace(/\n/g, ' ');
-
-                //         // 17文字以上の場合は16文字まで切り取り
-                //         if (processedName.length > 16) {
-                //             processedName = processedName.substring(0, 16);
-                //         }
-
-                //         // 代替コピー方法(古いブラウザ対応)
-                //         const textArea = document.createElement('textarea');
-                //         textArea.value = processedName;
-                //         textArea.style.position = 'fixed';
-                //         textArea.style.left = '-999999px';
-                //         textArea.style.top = '-999999px';
-                //         document.body.appendChild(textArea);
-                //         textArea.focus();
-                //         textArea.select();
-
-                //         try {
-                //             document.execCommand('copy');
-                //             textArea.remove();
-
-                //             // コピー成功の表示
-                //             copyKoreanBtn.textContent = '✓';
-                //             copyKoreanBtn.classList.add('copied');
-
-                //             // 2秒後に元に戻す
-                //             setTimeout(() => {
-                //                 copyKoreanBtn.textContent = '🔍보물명 복사';
-                //                 copyKoreanBtn.classList.remove('copied');
-                //             }, 2000);
-                //         } catch (err) {
-                //             console.error('コピーに失敗しました:', err);
-                //             textArea.remove();
-                //             alert('コピーに失敗しました');
-                //         }
-                //     };
-                // } else {
-                //     copyKoreanBtn.style.display = 'none';
-                // }
-
-                // 推奨の方法
                 // 韓国語名コピーボタンの設定
                 const copyKoreanBtn = document.getElementById('copyKoreanBtn');
                 const koreanName = getKoreanName(item.id);
@@ -1510,7 +1459,28 @@
                     copyKoreanBtn.textContent = '🔍보물명 복사';
                     copyKoreanBtn.classList.remove('copied');
                     copyKoreanBtn.onclick = () => {
-                        navigator.clipboard.writeText(koreanName).then(() => {
+                        // 改行コードを半角スペースに変換
+                        let processedName = koreanName.replace(/\\n/g, ' ').replace(/\n/g, ' ');
+
+                        // 17文字以上の場合は16文字まで切り取り
+                        if (processedName.length > 16) {
+                            processedName = processedName.substring(0, 16);
+                        }
+
+                        // 代替コピー方法(古いブラウザ対応)
+                        const textArea = document.createElement('textarea');
+                        textArea.value = processedName;
+                        textArea.style.position = 'fixed';
+                        textArea.style.left = '-999999px';
+                        textArea.style.top = '-999999px';
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+
+                        try {
+                            document.execCommand('copy');
+                            textArea.remove();
+
                             // コピー成功の表示
                             copyKoreanBtn.textContent = '✓';
                             copyKoreanBtn.classList.add('copied');
@@ -1520,10 +1490,11 @@
                                 copyKoreanBtn.textContent = '🔍보물명 복사';
                                 copyKoreanBtn.classList.remove('copied');
                             }, 2000);
-                        }).catch(err => {
+                        } catch (err) {
                             console.error('コピーに失敗しました:', err);
-                            alert('コピーに失敗しました');
-                        });
+                            textArea.remove();
+                            alert('복사에 실패했습니다');
+                        }
                     };
                 } else {
                     copyKoreanBtn.style.display = 'none';
@@ -2013,7 +1984,7 @@
                 } catch (err) {
                     console.error('コピーに失敗しました:', err);
                     textArea.remove();
-                    alert('コピーに失敗しました');
+                    alert('복사에 실패했습니다');
                 }
             }
 

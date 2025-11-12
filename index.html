@@ -1083,7 +1083,7 @@
 </head>
 
 <body>
-    <div class="update-version">Ver. 13.4<br>更新日 2025年11月9日</div>
+    <div class="update-version">Ver. 13.4<br>更新日 2025年11月12日</div>
     <div class="book-frame">
 <div class="inventory-container">
 <div class="header">
@@ -1500,35 +1500,6 @@
                 } else {
                     copyKoreanBtn.style.display = 'none';
                 }
-
-                // // 推奨の方法
-                // // 韓国語名コピーボタンの設定
-                // const copyKoreanBtn = document.getElementById('copyKoreanBtn');
-                // const koreanName = getKoreanName(item.id);
-
-                // if (koreanName) {
-                //     copyKoreanBtn.style.display = 'block';
-                //     copyKoreanBtn.textContent = '🔍韓国語名コピー';
-                //     copyKoreanBtn.classList.remove('copied');
-                //     copyKoreanBtn.onclick = () => {
-                //         navigator.clipboard.writeText(koreanName).then(() => {
-                //             // コピー成功の表示
-                //             copyKoreanBtn.textContent = '✓';
-                //             copyKoreanBtn.classList.add('copied');
-
-                //             // 2秒後に元に戻す
-                //             setTimeout(() => {
-                //                 copyKoreanBtn.textContent = '🔍韓国語名コピー';
-                //                 copyKoreanBtn.classList.remove('copied');
-                //             }, 2000);
-                //         }).catch(err => {
-                //             console.error('コピーに失敗しました:', err);
-                //             alert('コピーに失敗しました');
-                //         });
-                //     };
-                // } else {
-                //     copyKoreanBtn.style.display = 'none';
-                // }
 
                 effect.textContent = item.effect.replace(/\\n/g, '\n'); //'/n'で改行する
                 effect.style.whiteSpace = 'pre-line';
