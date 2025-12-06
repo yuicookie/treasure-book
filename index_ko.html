@@ -1083,7 +1083,7 @@
 </head>
 
 <body>
-    <div class="update-version">Ver. 13.4<br>갱신일 2025년11월12일</div>
+    <div class="update-version">Ver. 13.5<br>갱신일 2025년12월07일</div>
     <div class="book-frame">
 <div class="inventory-container">
 <div class="header">
@@ -1553,13 +1553,28 @@
                 <div class="popup-description" style="white-space: pre-line;">${formattedDescription}</div>
                 `;
 
-                // 進化可能アイテムの場合は進化セクションの後に、そうでなければ入手方法の後に追加
-                if (item.canEvolve && (this.currentTab === 'general' || this.currentTab === 'evolution')) {
+                // 進化可能アイテムで進化セクションが表示されている場合は進化セクションの後に追加
+                if (item.canEvolve && evolutionSection.style.display !== 'none') {
                     evolutionSection.insertAdjacentElement('afterend', descSection);
                 } else {
-                    const methodSection = popup.querySelector('.popup-section:nth-child(4)'); // 入手方法のセクション
+                    // それ以外の場合は、入手方法セクションを探して後に追加
+                    const allSections = popup.querySelectorAll('.popup-section');
+                    let methodSection = null;
+
+                    // 入手方法セクションを探す
+                    for (let section of allSections) {
+                        const title = section.querySelector('.popup-section-title');
+                        if (title && title.textContent === '入手方法') {
+                            methodSection = section;
+                            break;
+                        }
+                    }
+
                     if (methodSection) {
                         methodSection.insertAdjacentElement('afterend', descSection);
+                    } else {
+                        // 見つからない場合は最後に追加
+                        popup.appendChild(descSection);
                     }
                 }
             }
