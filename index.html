@@ -387,6 +387,31 @@
 
         /*
         =================================
+        表示数カウント
+        =================================
+        */
+        .item-count-display {
+            display: block;
+            margin-left: auto;
+            margin-right: 12px;
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            position: relative;
+            z-index: 5;
+        }
+
+        @media (max-width: 768px) {
+            .item-count-display {
+                margin-right: 12px;
+                margin-top: 6px;
+                font-size: 12px;
+            }
+        }
+
+        /*
+        =================================
         インベントリグリッド
         =================================
         */
@@ -1083,7 +1108,7 @@
 </head>
 
 <body>
-    <div class="update-version">Ver. 13.5<br>更新日 2025年12月07日</div>
+    <div class="update-version">Ver. 13.5<br>更新日 2026年1月1日</div>
     <div class="book-frame">
 <div class="inventory-container">
 <div class="header">
@@ -1119,6 +1144,7 @@
         </div>
 </div>
 
+            <div class="item-count-display" id="itemCountDisplay">宝物数: 0件</div>
             <div class="inventory-grid" id="inventoryGrid">
                 <!-- アイテムがJavaScriptで動的に生成される -->
             </div>
@@ -1750,9 +1776,9 @@
             }
             // アイテム数更新
             updateItemCount(count) {
-                const currentCountElement = document.getElementById('currentCount');
-                if (currentCountElement) {
-                    currentCountElement.textContent = count;
+                const itemCountDisplay = document.getElementById('itemCountDisplay');
+                if (itemCountDisplay) {
+                    itemCountDisplay.textContent = `宝物数: ${count}件`;
                 }
             }
 

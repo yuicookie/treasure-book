@@ -2834,26 +2834,27 @@ effect: '초미니자력\n강화 수치에 따라 2~3% 확률로 코인꽃 생�
 method: '최고급 보물 상자에서 획득',
 description: '금가루가 들어있는 음료를 마시는 것이야말로, 쿠키가 부릴 수 있는 최고의 사치!'
 },
-// {
-//     id: 'tr_ga119',
-//     name: '???',
-//     rarity: 'S',
-//     canEvolve: false,
-//     effect: '???',
-//     method: '???',
-//     description: '???',
-//     booknone: true
-// },
-// {
-//     id: 'tr_ga120',
-//     name: '???',
-//     rarity: 'S',
-//     canEvolve: false,
-//     effect: '???',
-//     method: '???',
-//     description: '???',
-//     booknone: true
-// },
+{
+id: 'tr_ga119',
+name: '다람쥐의 가루 솔솔 솔방울',
+rarity: 'S',
+canEvolve: false,
+effect: '강화 수치에 따라 출석시 25~50% 확률로 마법가 루 200개 획득',
+method: '다람쥐 상점 뽑기에서 획득',
+description: '슈가파우더가 솔솔 뿌려진 달콤한 초코 솔방울.\n얼려 놓고 하나하나 떼어먹곤 한다.',
+hasPassiveTag: true,
+booknone: true
+},
+{
+id: 'tr_ga120',
+name: '다람쥐의 도토리 오너먼트',
+rarity: 'S',
+canEvolve: false,
+effect: '강화 수치에 따라 소환수에 탑승시 모든 젤리 300~400점 추가\n강화 수치에 따라 이어달리기시 체력 30~50 증가',
+method: '다람쥐 상점 뽑기에서 획득',
+description: '소중히 간직하고 있던 커다란 도토리로 만든 오너먼트. 걸어놓으면 누군가가 몰래 먹어버릴지도 모르니 주의!',
+booknone: true
+},
 // {
 //     id: 'tr_ga121',
 //     name: '???',
@@ -4121,6 +4122,17 @@ hasPassiveTag: true,
 booknone: true
 },
 {
+id: 'tr_event_95',
+name: '소망이 반짝이는 크리스탈 과자집',
+rarity: 'S',
+canEvolve: false,
+effect: '2026년 12월 24일까지 출석시 12%~25% 확률로 크리스탈 1개 획득',
+method: '2025 크리스마스 어드밴트 캘린더 보상으로 획득',
+description: '크리스마스는 기다리는 것도 즐거워! 소중한 마음을 모아모아 열네 밤을 보낸 끈기 있는 쿠키만이 손에 넣을 수 있는 특별한 과자집.\n쿠키들이 좋아하는 재료만을 엄선해 만들어졌기 때문에, 크리스탈과 함께 반짝반짝 빛이 난다고 한다.\n*판매시 재구매가 불가능한 보물입니다.',
+hasPassiveTag: true,
+booknone: true
+},
+{
 id: 'tr_event_96',
 name: '짤랑이는 트리 오너먼트',
 rarity: 'A',
@@ -4128,6 +4140,17 @@ canEvolve: false,
 effect: '2026년 12월 24일까지 출석시 6~11% 확률로 11,000 코인 획득',
 method: '2025 크리스마스 트리 전구 모으기 이벤트 보상으로 획득',
 description: '어떤 트리라도 풍성하고 아름답게 꾸며주는 트리 전구.\n코인 전구가 함께 달려 있어, 이전구로 트리를 장식해 두면 금전운이 오른다는 소문이?\n흔들릴 때마다 크리스마스 종소리 대신 짤랑짤랑 소리가 울려 퍼진다.\n*판매시 재구매가 불가능한 보물입니다.',
+hasPassiveTag: true,
+booknone: true
+},
+{
+id: 'tr_event_97',
+name: '2026 크리스탈 푸른붉은말',
+rarity: 'S',
+canEvolve: false,
+effect: '2026년 12월 31일까지 출석시 5%~50% 확률로 크리스탈 1개 획득',
+method: '2026 새해 기념 보상으로 획득',
+description: '크리스탈을 잔뜩 머금어 푸른 빛을 내지만, 붉은말이 분명해! 2026 년에도 푸른붉은말과 함께 달려보자!\n*판매시 재구매가 불가능한 보물입니다.',
 hasPassiveTag: true,
 booknone: true
 },
