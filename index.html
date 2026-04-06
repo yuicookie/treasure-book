@@ -5,6 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>宝物図鑑</title>
+
+    <!-- OGP設定(SNSプレビューを空白に) -->
+    <meta property="og:title" content=" ">
+    <meta property="og:description" content=" ">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content=" ">
+    <meta name="twitter:description" content=" ">
+
     <link rel="apple-touch-icon" type="image/webp" href="img/apple-touch-icon-180x180.webp">
     <link rel="icon" type="image/webp" href="img/icon-192x192.webp">
     <style>
@@ -1012,7 +1021,7 @@
         バージョンフィルタボタン
         =================================
         */
-        .version-filter-btn {
+        .version-filter-select {
             padding: 5px 15px;
             border: 2px solid #29b6f6;
             border-radius: 15px;
@@ -1022,21 +1031,27 @@
             font-size: 14px;
             font-weight: bold;
             transition: all 0.3s ease;
-            white-space: nowrap;
+            outline: none;
         }
 
-        .version-filter-btn:hover {
+        .version-filter-select:focus {
             background: #e3f2fd;
+            border-color: #1e88e5;
         }
 
-        .version-filter-btn.active {
-            background: #29b6f6;
-            color: white;
+        .version-filter-select option {
+            background: white;
+            color: #333;
+            font-weight: normal;
+        }
+
+        .version-filter-select option:first-child {
+            color: #999;
         }
 
         @media (max-width: 768px) {
-            .version-filter-btn {
-                padding: 4px 12px;
+            .version-filter-select {
+                padding: 6px 12px;
                 font-size: 12px;
             }
         }
@@ -1123,9 +1138,12 @@
         </div>
         <div class="search-options">
             <div class="search-checkboxes">
-                <button class="version-filter-btn" id="versionFilterBtn133" onclick="inventoryUI.toggleVersionFilter('13.3')">Ver 13.3</button>
-                <button class="version-filter-btn" id="versionFilterBtn134" onclick="inventoryUI.toggleVersionFilter('13.4')">Ver 13.4</button>
-                <button class="version-filter-btn" id="versionFilterBtn136" onclick="inventoryUI.toggleVersionFilter('13.6')">Ver 13.6</button>
+                <select class="version-filter-select" id="versionFilterSelect" onchange="inventoryUI.onVersionChange(this.value)">
+                    <option value="">バージョン選択</option>
+                    <option value="13.3">Ver 13.3</option>
+                    <option value="13.4">Ver 13.4</option>
+                    <option value="13.6">Ver 13.6</option>
+                </select>
                 <div style="width: 100%; height: 0;"></div>
                 <label><input type="checkbox" id="searchName" checked onchange="inventoryUI.onSearchOptionChange()"> 宝物名</label>
                 <label><input type="checkbox" id="searchEffect" checked onchange="inventoryUI.onSearchOptionChange()"> 装着効果</label>
@@ -1409,12 +1427,20 @@
                 this.currentPopupItem = item;
                 this.popupSource = source;
 
-                // 履歴を管理（グリッドから開いた場合のみ履歴に追加）
+                // 履歴を管理
                 if (source === 'grid') {
+                    // グリッドから開いた場合は履歴をリセットして新たに開始
                     this.popupHistory = [item];
                 } else if (source === 'evolution' || source === 'blessed') {
-                    this.popupHistory.push(item);
+                    // 既に履歴に同じアイテムがある場合はそこまで巻き戻す（ループ防止）
+                    const existingIndex = this.popupHistory.findIndex(h => h.id === item.id);
+                    if (existingIndex !== -1) {
+                        this.popupHistory = this.popupHistory.slice(0, existingIndex + 1);
+                    } else {
+                        this.popupHistory.push(item);
+                    }
                 }
+                // source === 'history' の場合は closePopup で pop 済みのため変更しない
 
                 const overlay = document.getElementById('popupOverlay');
                 const popup = document.getElementById('popup');
@@ -1557,7 +1583,61 @@
                 // アイテム説明セクションを追加
                 this.addDescriptionSection(item);
 
+                // 進化前のアイテムを表示(進化宝物と祝福宝物のみ)
+                this.addBaseItemSection(item);
+
                 overlay.classList.add('show');
+            }
+            // 進化前アイテムセクションを追加
+            addBaseItemSection(item) {
+                // 既存の進化前セクションを削除
+                const existingBaseSection = document.getElementById('baseItemSection');
+                if (existingBaseSection) {
+                    existingBaseSection.remove();
+                }
+
+                // 進化前アイテムを検索
+                const baseItem = this.findBaseItem(item);
+                if (!baseItem) return;
+
+                const popup = document.getElementById('popup');
+                const descSection = document.getElementById('descriptionSection');
+
+                // 進化前セクションを作成
+                const baseSection = document.createElement('div');
+                baseSection.id = 'baseItemSection';
+                baseSection.className = 'popup-section';
+
+                // 進化前アイテムのタブを判定
+                let baseTabType = 'general';
+                if (ITEM_DATA.evolution.some(i => i.id === baseItem.id)) {
+                    baseTabType = 'evolution';
+                } else if (ITEM_DATA.blessed.some(i => i.id === baseItem.id)) {
+                    baseTabType = 'blessed';
+                }
+
+                const baseSectionTitle = this.currentTab === 'blessed' ? '祝福前の宝物' : '進化前の宝物';
+                baseSection.innerHTML = `
+                    <div class="popup-section-title">${baseSectionTitle}</div>
+                    <div class="evolution-preview" onclick="inventoryUI.showEvolvedItemPopup('${baseItem.id}')">
+                        <div class="evolution-icon" style="background-image: url('${getFrameImagePath(baseItem.rarity, baseTabType)}');">
+                            <div class="evolution-item-image" style="background-image: url('${getItemImagePath(baseItem.id, baseTabType !== 'general')}'); z-index: 4;"></div>
+                            ${baseTabType === 'blessed' ? `<div class="blessing-effect" style="background-image: url('${getBlessingEffectPath(baseItem.rarity)}'); z-index: 3;"></div>` : ''}
+                            ${baseItem.hasPassiveTag ? `<div class="passive-tag-effect" style="background-image: url('img/treasure_tag_passive.png'); z-index: 5;"></div>` : ''}
+                            ${baseItem.hasUseTag ? `<div class="passive-tag-effect" style="background-image: url('img/treasure_tag_use.png'); z-index: 5;"></div>` : ''}
+                            ${baseTabType === 'blessed' && baseItem.rarity === 'S' ? `<div class="effect-animation" style="z-index: 6;"></div>` : ''}
+                        </div>
+                        <div>
+                            <div style="font-weight: bold; color: ${getRarityColor(baseItem.rarity)};">${baseItem.name}</div>
+                            <div style="font-size: 14px; color: #666; margin-top: 5px;">${baseItem.effect}</div>
+                        </div>
+                    </div>
+                `;
+
+                // 説明セクションの後に追加
+                if (descSection) {
+                    descSection.insertAdjacentElement('afterend', baseSection);
+                }
             }
             // アイテム説明セクションを追加
             addDescriptionSection(item) {
@@ -1656,24 +1736,42 @@
             findBlessedItem(baseId) {
                 return ITEM_DATA.blessed.find(item => item.baseId === baseId);
             }
+
+            // 進化前のアイテムを検索
+            findBaseItem(currentItem) {
+                if (!currentItem.baseId) return null;
+
+                // 全カテゴリから検索
+                for (let category of ['general', 'evolution', 'blessed']) {
+                    const baseItem = ITEM_DATA[category].find(item => item.id === currentItem.baseId);
+                    if (baseItem) {
+                        return baseItem;
+                    }
+                }
+                return null;
+            }
+
             // 進化したアイテムのポップアップ表示
             showEvolvedItemPopup(itemId) {
+                // 一般宝物を検索
+                let generalItem = ITEM_DATA.general.find(item => item.id === itemId);
+                if (generalItem) {
+                    this.currentTab = 'general';
+                    this.showItemPopup(generalItem, 'evolution');
+                    return;
+                }
+
                 // 進化アイテムを検索
                 let evolvedItem = ITEM_DATA.evolution.find(item => item.id === itemId);
                 if (evolvedItem) {
-                    // 一般宝物タブから進化宝物を開く場合、タブを一時的に切り替え
-                    const originalTab = this.currentTab;
                     this.currentTab = 'evolution';
                     this.showItemPopup(evolvedItem, 'evolution');
-                    // タブを元に戻す必要はない（ポップアップが開いている間はタブ状態を維持）
                     return;
                 }
 
                 // 祝福アイテムを検索
                 let blessedItem = ITEM_DATA.blessed.find(item => item.id === itemId);
                 if (blessedItem) {
-                    // 進化宝物タブから祝福宝物を開く場合、タブを一時的に切り替え
-                    const originalTab = this.currentTab;
                     this.currentTab = 'blessed';
                     this.showItemPopup(blessedItem, 'blessed');
                     return;
@@ -1685,33 +1783,21 @@
                 const popup = document.getElementById('popup');
                 const icon = document.getElementById('popupIcon');
 
-                // 履歴が2つ以上ある場合（通常宝物→進化宝物の順で開いた場合）
+                // 履歴が2つ以上ある場合は前の画面に戻る
                 if (this.popupHistory.length >= 2) {
-                    // 最後のアイテムを削除
+                    // 現在のアイテムを履歴から削除
                     this.popupHistory.pop();
 
-                    // 元のアイテム（通常宝物）を表示
+                    // ひとつ前のアイテムを取得
                     const previousItem = this.popupHistory[this.popupHistory.length - 1];
 
-                    // 元のタブに戻す
-                    if (this.popupHistory.length === 1) {
-                        // 最初のアイテムの場合、そのアイテムが属するタブに戻す
-                        if (ITEM_DATA.general.some(item => item.id === previousItem.id)) {
-                            this.currentTab = 'general';
-                        } else if (ITEM_DATA.evolution.some(item => item.id === previousItem.id)) {
-                            this.currentTab = 'evolution';
-                        } else if (ITEM_DATA.blessed.some(item => item.id === previousItem.id)) {
-                            this.currentTab = 'blessed';
-                        }
-                    } else {
-                        // 2つ以上ある場合は、前のアイテムが所属するタブに切り替える
-                        if (ITEM_DATA.general.some(item => item.id === previousItem.id)) {
-                            this.currentTab = 'general';
-                        } else if (ITEM_DATA.evolution.some(item => item.id === previousItem.id)) {
-                            this.currentTab = 'evolution';
-                        } else if (ITEM_DATA.blessed.some(item => item.id === previousItem.id)) {
-                            this.currentTab = 'blessed';
-                        }
+                    // 前のアイテムが属するタブに切り替える
+                    if (ITEM_DATA.general.some(item => item.id === previousItem.id)) {
+                        this.currentTab = 'general';
+                    } else if (ITEM_DATA.evolution.some(item => item.id === previousItem.id)) {
+                        this.currentTab = 'evolution';
+                    } else if (ITEM_DATA.blessed.some(item => item.id === previousItem.id)) {
+                        this.currentTab = 'blessed';
                     }
 
                     this.showItemPopup(previousItem, 'history');
@@ -1925,20 +2011,14 @@
                 this.switchTab(this.currentTab);
             }
 
-            // バージョンフィルタ切り替え
-            toggleVersionFilter(version) {
+            // バージョン選択変更時の処理
+            onVersionChange(version) {
                 const searchBox = document.getElementById('searchBox');
 
-                // 同じバージョンをクリックした場合はトグル、違うバージョンの場合は切り替え
-                if (this.isVersionFiltered && this.currentVersion === version) {
-                    // フィルター解除
+                if (!version) {
+                    // 「バージョン選択」を選んだ場合はフィルター解除
                     this.isVersionFiltered = false;
                     this.currentVersion = null;
-
-                    // 全てのバージョンボタンを非アクティブに
-                    document.querySelectorAll('.version-filter-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
 
                     // 検索ボックスに値がある場合は検索を再実行、なければ完全にクリア
                     if (searchBox.value.trim()) {
@@ -1952,21 +2032,9 @@
                         };
                     }
                 } else {
-                    // フィルター有効化または切り替え
+                    // フィルター有効化
                     this.isVersionFiltered = true;
                     this.currentVersion = version;
-
-                    // 全てのバージョンボタンのアクティブ状態を更新
-                    document.querySelectorAll('.version-filter-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-
-                    // 現在のバージョンのボタンをアクティブに
-                    const activeBtn = Array.from(document.querySelectorAll('.version-filter-btn'))
-                        .find(btn => btn.textContent.includes(version));
-                    if (activeBtn) {
-                        activeBtn.classList.add('active');
-                    }
 
                     // 検索中フラグを立てる
                     this.isSearching = true;
@@ -2100,10 +2168,6 @@
 
         function toggleHeader() {
             inventoryUI.toggleHeader();
-        }
-
-        function toggleVersionFilter(version) {
-            inventoryUI.toggleVersionFilter(version);
         }
 
         function shareItem() {
